@@ -1,0 +1,6 @@
+{
+  "fases": [
+    { "id": "f1", "nombre": "Diseño", "milestone": "Diseño", "aprobada": null },
+    { "id": "f2", "nombre": "Construcción", "milestone": "Construcción", "aprobada": null }
+  ]
+}

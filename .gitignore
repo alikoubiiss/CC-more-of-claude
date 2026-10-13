@@ -1,0 +1,4 @@
+# Config local (ids, rutas y credenciales propias): no se sube
+.hq/project.json
+.env
+*.local.*
