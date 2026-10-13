@@ -1,9 +1,8 @@
 # CC-more-of-claude · plantilla "Project HQ"
 
 Plantilla de un proyecto gestionado con **Claude Code** como orquestador: un tablero de tarjetas, una memoria
-persistente en tu bóveda de Obsidian y un cuaderno de NotebookLM para los documentos largos. Este repo es un
-proyecto de ejemplo (`demo-hq`) ya saneado: no contiene rutas, ids ni cuentas de nadie, solo marcadores
-`<ASÍ>` que tú sustituyes por los tuyos.
+persistente en una bóveda de Obsidian y un cuaderno de NotebookLM para los documentos largos. Los ficheros llevan
+marcadores `<ASÍ>` que sustituyes por tus propias rutas e ids.
 
 ![Tablero de ejemplo](docs/tablero.png)
 
@@ -77,7 +76,3 @@ rutas nunca se suben).
 - **Fases**: `.hq/fases.example.json` (un `milestone` por fase, `aprobada: null` hasta que la apruebes).
 - **Tarjetas**: borra las de `backlog/tasks/` y `backlog/milestones/` (son ejemplos) y deja que `/planificar` cree las tuyas.
 - **Sin Obsidian o sin NotebookLM**: elimina las reglas correspondientes de `CLAUDE.md`; el flujo de tarjetas funciona igual.
-
-## Licencia
-
-Sin licencia definida todavía: añade un `LICENSE` si quieres que otros puedan reutilizarlo.
