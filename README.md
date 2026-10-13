@@ -33,6 +33,9 @@ Los estados de una tarjeta son `Ideas → Planificado → En curso → Verifican
 3. **/planificar** diseña `docs/ARQUITECTURA.md`, define fases y crea las tarjetas con criterios de aceptación.
 4. **/ejecutar siguiente** delega en `ejecutor` la próxima tarjeta lista de la fase activa.
 5. **/revisar** pide a `revisor` una verificación independiente contra los criterios.
+4b. **Sin gastar tokens**: en `cc`, `i` pasa la tarjeta seleccionada de *Planificado* a *En curso* sin lanzar Claude
+   y abre su editor; `E` edita título, descripción, criterios (separados por `|`), modelo y esfuerzo mientras está en
+   *Planificado* o *En curso*. Si prefieres que Claude la haga, `e` lanza `/ejecutar` en una pestaña nueva.
 6. **Tú decides**: apruebas la tarjeta (`a` en `cc`) o pides cambios (`m`). Al completarse una fase, la apruebas con `A`.
 7. **/guardar** deja un resumen en la bóveda y después **/clear**: la siguiente sesión empieza limpia con /retomar.
 
@@ -72,6 +75,11 @@ Después: `cp .hq/project.example.json .hq/project.json` y `cp .hq/fases.example
 rutas nunca se suben).
 
 ### 3. Ajusta el flujo
+- **Modelo por tarjeta** (para gastar menos): cada tarjeta lleva `modelo:<haiku|sonnet|opus>` y
+  `esfuerzo:<medium|high|xhigh>`. Se prioriza el más barato que alcance: `haiku` (siempre `medium`) para docs,
+  configuración y cambios triviales; `sonnet` para lo corriente; `opus` solo para arquitectura, seguridad,
+  concurrencia o migraciones. Si faltan las etiquetas, una rúbrica las deduce de la tarjeta, y cada rechazo del
+  revisor (`Falta:`) sube un peldaño: `haiku → sonnet/high → opus/high → opus/xhigh`.
 - **Estados y puerto del tablero**: `backlog/config.yml`.
 - **Fases**: `.hq/fases.example.json` (un `milestone` por fase, `aprobada: null` hasta que la apruebes).
 - **Tarjetas**: borra las de `backlog/tasks/` y `backlog/milestones/` (son ejemplos) y deja que `/planificar` cree las tuyas.
