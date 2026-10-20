@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mundo HQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --dusk:#1B1B3A; --dusk-2:#26264F; --dusk-3:#34346E; --ink:#ECEAFB; --mist:#A9A6D2;
+  --lantern:#F2B544; --moss:#6FB98F; --rose:#E4637C; --sky:#8FB8FF;
+  --opus:var(--rose); --sonnet:var(--sky); --haiku:var(--moss);
+  --display:"Unbounded","Trebuchet MS",sans-serif; --sans:"Figtree",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{color-scheme:dark}
+body{margin:0;color:var(--ink);font:400 15px/1.5 var(--sans);min-height:100vh;
+  background:
+   radial-gradient(1200px 500px at 70% -10%,rgba(143,184,255,.16),transparent 60%),
+   radial-gradient(900px 500px at 0% 100%,rgba(228,99,124,.12),transparent 60%),
+   var(--dusk)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--lantern);outline-offset:3px}
+[hidden]{display:none!important}
+h1,h2,h3{margin:0;font-family:var(--display);font-weight:700;letter-spacing:-.01em}
+
+.g{display:inline-block;width:12px;height:12px;background:currentColor;flex:none}
+.g.opus{color:var(--opus);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);width:14px;height:14px}
+.g.sonnet{color:var(--sonnet);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+.g.haiku{color:var(--haiku);border-radius:60% 0 60% 60%;transform:rotate(-45deg);width:10px;height:10px}
+
+.top{display:flex;align-items:center;gap:18px;padding:14px 26px}
+.brand{font:700 18px var(--display)}
+.brand i{font-style:normal;color:var(--lantern)}
+.seg{display:flex;background:var(--dusk-2);border-radius:999px;padding:4px;margin-left:10px}
+.seg button{background:none;border:0;border-radius:999px;padding:7px 16px;color:var(--mist);font-weight:500}
+.seg button[aria-selected="true"]{background:var(--dusk-3);color:var(--ink)}
+.player{margin-left:auto;display:flex;align-items:center;gap:16px}
+.xp{width:190px}
+.xp .l{display:flex;justify-content:space-between;font-size:12px;color:var(--mist);margin-bottom:4px}
+.xp .l b{color:var(--ink);font-weight:600}
+.track{height:8px;border-radius:99px;background:var(--dusk-2);overflow:hidden}
+.track i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--lantern),#FFD98A)}
+.flame{display:flex;align-items:center;gap:6px;font-weight:600}
+.flame::before{content:"";width:12px;height:16px;background:var(--lantern);border-radius:50% 50% 50% 50%/65% 65% 35% 35%;box-shadow:0 0 12px rgba(242,181,68,.7)}
+
+main{padding:10px 26px 40px;max-width:1280px;margin:0 auto}
+
+/* ====== MAPA ====== */
+.mapa h1{font-size:clamp(26px,4vw,40px);margin:18px 0 6px}
+.mapa .lead{color:var(--mist);margin:0 0 30px;max-width:52ch}
+.camino{position:relative;display:grid;gap:22px;padding:6px 0 10px}
+.camino::before{content:"";position:absolute;left:50%;top:20px;bottom:20px;border-left:3px dashed var(--dusk-3)}
+.isla{position:relative;width:calc(50% - 46px);display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;text-align:left;
+  background:var(--dusk-2);border:1px solid var(--dusk-3);border-radius:28px 28px 28px 8px;padding:16px 20px;transition:transform .2s}
+.isla:nth-child(even){margin-left:calc(50% + 46px);border-radius:28px 28px 8px 28px}
+.isla:hover{transform:translateY(-3px)}
+.isla::after{content:"";position:absolute;top:50%;width:46px;border-top:3px dashed var(--dusk-3)}
+.isla:nth-child(odd)::after{left:100%}
+.isla:nth-child(even)::after{right:100%}
+.isla.live{border-color:var(--lantern);box-shadow:0 0 0 1px var(--lantern),0 10px 40px rgba(242,181,68,.16)}
+.ring{--p:84;width:84px;height:84px;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--c,var(--lantern)) calc(var(--p)*1%),var(--dusk-3) 0)}
+.ring span{width:66px;height:66px;border-radius:50%;background:var(--dusk-2);display:grid;place-items:center;text-align:center;font:700 22px/1 var(--display)}
+.ring small{display:block;font:500 11px var(--sans);color:var(--mist);margin-top:3px}
+.isla h2{font-size:17px;margin-bottom:4px}
+.isla p{margin:0;color:var(--mist);font-size:14px}
+.isla .ahora{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px}
+.avatar{position:absolute;top:-16px;right:18px;background:var(--lantern);color:#2A1E00;font-weight:600;font-size:12px;padding:4px 10px;border-radius:99px}
+.avatar::after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-5px;border:5px solid transparent;border-top-color:var(--lantern);border-bottom:0}
+.logros{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}
+.insignia{display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:99px;background:var(--dusk-2);font-size:13px}
+.insignia::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--lantern);box-shadow:0 0 10px var(--lantern)}
+.insignia.off{color:var(--mist)} .insignia.off::before{background:var(--dusk-3);box-shadow:none}
+
+/* ====== PROYECTO ====== */
+.jefe{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;margin:14px 0 26px;padding:20px 24px;border-radius:30px 30px 30px 8px;
+  background:linear-gradient(120deg,var(--dusk-3),var(--dusk-2));border:1px solid var(--dusk-3)}
+.jefe h1{font-size:clamp(22px,3.2vw,34px);line-height:1.1}
+.jefe .sub{color:var(--mist);margin:6px 0 16px}
+.hp .l{display:flex;justify-content:space-between;font-size:13px;color:var(--mist);margin-bottom:6px}
+.hp .l b{color:var(--ink)}
+.hp .track{height:14px;background:rgba(0,0,0,.28)}
+.hp .track i{background:linear-gradient(90deg,var(--rose),#FF9AAE)}
+.prov{display:grid;grid-template-columns:repeat(3,auto);gap:4px 20px;font-size:13px;color:var(--mist)}
+.prov b{display:block;color:var(--ink);font:700 20px/1.1 var(--display)}
+.prov .gas{grid-column:1/-1;margin-top:8px}
+.prov .gas .track i{width:42%;background:var(--moss)}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:24px;align-items:start}
+.etapas{display:grid;grid-template-columns:repeat(5,minmax(158px,1fr));gap:12px;overflow-x:auto;padding-bottom:8px}
+.etapa{position:relative;padding-top:34px}
+.etapa::before{content:"";position:absolute;left:0;right:-14px;top:11px;border-top:3px solid var(--dusk-3)}
+.etapa:last-child::before{right:0}
+.etapa::after{content:"";position:absolute;left:0;top:2px;width:20px;height:20px;border-radius:50%;background:var(--dusk);border:3px solid var(--dusk-3)}
+.etapa.hecha::after{background:var(--moss);border-color:var(--moss)}
+.etapa.act::after{background:var(--lantern);border-color:var(--lantern);box-shadow:0 0 0 6px rgba(242,181,68,.2);animation:halo 2s ease-in-out infinite}
+@keyframes halo{50%{box-shadow:0 0 0 11px rgba(242,181,68,.05)}}
+.etapa h3{font-size:14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:baseline}
+.etapa h3 span{font:500 13px var(--sans);color:var(--mist)}
+.pila{display:grid;gap:12px}
+.carta{background:var(--dusk-2);border:1px solid var(--dusk-3);border-left:4px solid var(--c,var(--dusk-3));border-radius:6px 20px 20px 20px;padding:12px 14px;cursor:grab}
+.carta.opus{--c:var(--opus)} .carta.sonnet{--c:var(--sonnet)} .carta.haiku{--c:var(--haiku)}
+.carta .t{font-weight:600;margin:0 0 8px;font-size:14.5px;line-height:1.3}
+.carta .meta{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:12.5px;color:var(--mist)}
+.carta .meta .m{display:flex;gap:6px;align-items:center;color:var(--ink)}
+.carta .dep{margin-top:8px;font-size:12.5px;color:var(--lantern)}
+.pasos{display:flex;gap:4px;margin-top:10px}
+.pasos i{flex:1;height:5px;border-radius:9px;background:var(--dusk-3)}
+.pasos i.ok{background:var(--moss)}
+.carta.vivo{border-color:var(--lantern);border-left-color:var(--lantern);box-shadow:0 8px 28px rgba(242,181,68,.15)}
+.carta.fin{opacity:.7}
+.xpb{margin-left:auto;color:var(--lantern);font-weight:600}
+
+.bitacora{background:var(--dusk-2);border:1px solid var(--dusk-3);border-radius:26px 26px 26px 8px;position:sticky;top:12px;overflow:hidden}
+.bitacora header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 8px}
+.bitacora h3{font-size:15px}
+.bitacora .on{font-size:12px;color:var(--moss);display:flex;gap:6px;align-items:center}
+.bitacora .on::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--moss);box-shadow:0 0 8px var(--moss)}
+.bitacora ol{list-style:none;margin:0;padding:0 18px 14px;display:grid;gap:11px;max-height:420px;overflow:hidden}
+.bitacora li{display:grid;grid-template-columns:16px 1fr;gap:10px;font-size:13.5px;line-height:1.35}
+.bitacora li time{display:block;font-size:11.5px;color:var(--mist)}
+.bitacora li.new{animation:in .6s ease-out}
+@keyframes in{from{transform:translateY(-6px);opacity:0}to{transform:none;opacity:1}}
+.barra{display:none}
+
+@media (min-width:1101px){.etapas{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media (max-width:900px){
+  .top{padding:12px 14px;flex-wrap:wrap}
+  .player{margin-left:0;width:100%}
+  .xp{flex:1;width:auto}
+  main{padding:6px 14px 90px}
+  .camino::before{left:22px}
+  .isla,.isla:nth-child(even){width:auto;margin-left:46px;border-radius:24px 24px 24px 8px}
+  .isla::after,.isla:nth-child(even)::after{left:auto;right:100%;width:24px}
+  .jefe{grid-template-columns:1fr}
+  .layout{grid-template-columns:1fr}
+  .bitacora{display:none}
+  .etapas{grid-template-columns:repeat(5,80vw);scroll-snap-type:x mandatory}
+  .etapa{scroll-snap-align:start}
+  .barra{display:flex;position:fixed;left:10px;right:10px;bottom:10px;gap:10px;align-items:center;padding:12px 16px;border-radius:99px;background:var(--dusk-3);box-shadow:0 8px 30px rgba(0,0,0,.4);font-size:13.5px}
+  .barra span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">Project <i>HQ</i></div>
+  <div class="seg" role="tablist">
+    <button role="tab" data-go="mapa" aria-selected="false">Mapa</button>
+    <button role="tab" data-go="proj" aria-selected="true">Bot de Telegram</button>
+  </div>
+  <div class="player">
+    <div class="xp"><div class="l"><span>Nivel <b>5</b></span><span><b>1.240</b> / 1.500 XP</span></div><div class="track"><i style="width:83%"></i></div></div>
+    <div class="flame">6 días</div>
+  </div>
+</div>
+
+<main>
+<!-- ========== MAPA ========== -->
+<section class="mapa" data-view="mapa" hidden>
+  <h1>Tus mundos</h1>
+  <p class="lead">Cada proyecto es una isla. Entra en la que brilla para seguir donde lo dejaste.</p>
+  <div class="camino">
+    <button class="isla live" data-open>
+      <span class="avatar">estás aquí</span>
+      <div class="ring" style="--p:84"><span>84<small>%</small></span></div>
+      <div><h2>Bot de Telegram</h2><p>Nivel 5. El jefe «primer despliegue» está a 3 tarjetas.</p>
+        <div class="ahora"><span class="g sonnet"></span>Editando el nodo «Filtrar spam»</div></div>
+    </button>
+    <button class="isla" data-open>
+      <div class="ring" style="--p:62;--c:var(--sky)"><span>62<small>%</small></span></div>
+      <div><h2>Estación meteo</h2><p>Nivel 3. Calibrar el sensor BME280 con la Arduino Nano.</p></div>
+    </button>
+    <button class="isla" data-open>
+      <div class="ring" style="--p:30;--c:var(--moss)"><span>30<small>%</small></span></div>
+      <div><h2>Servidor casero</h2><p>Nivel 2. Durmiendo desde hace 9 días: migrar los contenedores a Proxmox.</p></div>
+    </button>
+    <button class="isla" data-open>
+      <div class="ring" style="--p:12;--c:var(--rose)"><span>12<small>%</small></span></div>
+      <div><h2>demo-hq</h2><p>Nivel 1. Proyecto de prueba del sistema.</p></div>
+    </button>
+  </div>
+  <div class="logros">
+    <span class="insignia">Primer despliegue</span>
+    <span class="insignia">Racha de 5 días</span>
+    <span class="insignia off">10 tarjetas sin fallo: 8 de 10</span>
+    <span class="insignia off">Sesión bajo presupuesto</span>
+  </div>
+</section>
+
+<!-- ========== PROYECTO ========== -->
+<section data-view="proj">
+  <div class="jefe">
+    <div>
+      <h1>Bot de Telegram</h1>
+      <p class="sub">Jefe del hito: primer despliegue</p>
+      <div class="hp">
+        <div class="l"><span>Vida del jefe</span><span><b>3 tarjetas</b> para derrotarlo</span></div>
+        <div class="track"><i style="width:84%"></i></div>
+      </div>
+    </div>
+    <div class="prov">
+      <div>Modelo<b>Sonnet</b></div><div>Tokens<b>31,4 mil</b></div><div>Coste<b>0,42 $</b></div>
+      <div class="gas"><div class="track" title="42 % del presupuesto"><i></i></div></div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="etapas">
+      <section class="etapa"><h3>Ideas <span>1</span></h3><div class="pila">
+        <article class="carta opus"><p class="t">Resumen diario por voz</p><div class="meta"><span class="m"><span class="g opus"></span>Opus</span></div></article>
+      </div></section>
+      <section class="etapa"><h3>Planificado <span>2</span></h3><div class="pila">
+        <article class="carta sonnet"><p class="t">Webhook de alertas del servidor</p><div class="meta"><span class="m"><span class="g sonnet"></span>Sonnet</span><span>skill n8n</span></div><div class="dep">espera: Flujo de moderación</div></article>
+        <article class="carta sonnet"><p class="t">Comando /gasto para finanzas</p><div class="meta"><span class="m"><span class="g sonnet"></span>Sonnet</span><span>unas 2 h</span></div></article>
+      </div></section>
+      <section class="etapa act"><h3>En curso <span>1</span></h3><div class="pila">
+        <article class="carta sonnet vivo"><p class="t">Flujo de moderación de grupo</p><div class="meta"><span class="m"><span class="g sonnet"></span>Sonnet, ejecutor</span><span>3 de 5 criterios</span></div><div class="pasos"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i></i><i></i></div></article>
+      </div></section>
+      <section class="etapa"><h3>Verificando <span>1</span></h3><div class="pila">
+        <article class="carta sonnet"><p class="t">Validar la firma del webhook</p><div class="meta"><span class="m"><span class="g sonnet"></span>Sonnet, revisor</span><span>5 de 5</span></div><div class="pasos"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></div></article>
+      </div></section>
+      <section class="etapa hecha"><h3>Hecho <span>12</span></h3><div class="pila">
+        <article class="carta haiku fin"><p class="t">Almacenar chat_id en SQLite</p><div class="meta"><span>a la primera</span><span class="xpb">+40 XP</span></div></article>
+        <article class="carta haiku fin"><p class="t">Plantilla de mensajes</p><div class="meta"><span class="xpb">+25 XP</span></div></article>
+        <article class="carta haiku fin"><p class="t">Registrar el bot con BotFather</p><div class="meta"><span class="xpb">+25 XP</span></div></article>
+      </div></section>
+    </div>
+
+    <aside class="bitacora" aria-label="Ahora mismo">
+      <header><h3>Ahora mismo</h3><span class="on">en vivo</span></header>
+      <ol id="feed">
+        <li><span class="g sonnet"></span><div>Lee <b>flujos/moderacion.json</b><time>15:41:08</time></div></li>
+        <li><span class="g sonnet"></span><div>Edita el nodo <b>«Filtrar spam»</b><time>15:41:12</time></div></li>
+        <li><span class="g haiku"></span><div>Busca <b>«chat_id»</b> en 14 ficheros<time>15:41:20</time></div></li>
+        <li><span class="g sonnet"></span><div>Ejecuta <b>npm test</b><time>15:41:31</time></div></li>
+        <li><span class="g opus"></span><div>Pregunta a NotebookLM por los <b>límites de la API de Telegram</b><time>15:41:34</time></div></li>
+      </ol>
+    </aside>
+  </div>
+</section>
+</main>
+
+<div class="barra" aria-live="polite"><span class="g sonnet"></span><span id="barm">Ejecuta npm test</span></div>
+
+<script>
+const $$=s=>[...document.querySelectorAll(s)];
+function show(v){
+  $$('[data-view]').forEach(e=>e.hidden=e.dataset.view!==v);
+  $$('.seg button').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.go===v)));
+}
+$$('.seg button').forEach(t=>t.addEventListener('click',()=>show(t.dataset.go)));
+$$('[data-open]').forEach(e=>e.addEventListener('click',()=>show('proj')));
+show(new URLSearchParams(location.search).get('vista')==='mapa'?'mapa':'proj');
+const ev=[['sonnet','Lee','<b>src/estado.js</b>'],['sonnet','Edita el nodo','<b>«Responder al grupo»</b>'],['haiku','Busca','<b>flujos/**/*.json</b>'],['sonnet','Ejecuta','<b>npm test</b>'],['opus','Revisa las dependencias con el','<b>arquitecto</b>']];
+let n=0;
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  setInterval(()=>{
+    const [m,v,t]=ev[n++%ev.length], d=new Date().toLocaleTimeString('es-ES');
+    const li=document.createElement('li'); li.className='new';
+    li.innerHTML=`<span class="g ${m}"></span><div>${v} ${t}<time>${d}</time></div>`;
+    const ol=document.getElementById('feed'); ol.appendChild(li);
+    while(ol.children.length>7) ol.removeChild(ol.firstChild);
+    document.getElementById('barm').innerHTML=`${v} ${t}`;
+  },3800);
+}
+</script>
+</body>
+</html>

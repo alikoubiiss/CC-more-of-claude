@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taller HQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --board:#10282B; --board-2:#16373A; --mask:#1E4448; --mask-2:#285357;
+  --copper:#D6A85F; --copper-dim:#8B6B38; --silk:#E8EFE9; --silk-dim:#9FB4B0;
+  --opus:#FFB347; --sonnet:#6FE3FF; --haiku:#9BF29A; --alert:#FF6B5E;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{color-scheme:dark}
+body{margin:0;background:var(--board);color:var(--silk);font:400 15px/1.45 var(--sans);
+  background-image:
+   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cg fill='none' stroke='%23D6A85F' stroke-opacity='.07' stroke-width='2'%3E%3Cpath d='M0 60h90l30 30h110M0 200h60l40-40h120l30 30h70M160 0v70l30 30M250 320v-80l-30-30'/%3E%3C/g%3E%3Cg fill='%23D6A85F' fill-opacity='.09'%3E%3Ccircle cx='90' cy='60' r='4'/%3E%3Ccircle cx='230' cy='120' r='4'/%3E%3Ccircle cx='60' cy='200' r='4'/%3E%3Ccircle cx='160' cy='70' r='4'/%3E%3C/g%3E%3C/svg%3E");
+}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+[hidden]{display:none!important}
+
+.top{display:flex;align-items:center;gap:20px;padding:12px 24px;border-bottom:1px solid var(--copper-dim);background:var(--board-2)}
+.brand{font:800 26px/1 var(--display);letter-spacing:.04em;color:var(--copper)}
+.tabs{display:flex;gap:4px;margin-left:8px}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:8px 14px;color:var(--silk-dim);font-weight:500}
+.tab[aria-selected="true"]{color:var(--silk);border-bottom-color:var(--copper)}
+.top .where{margin-left:auto;display:flex;gap:18px;align-items:center;color:var(--silk-dim);font-size:13px}
+.streak{display:flex;align-items:center;gap:6px;color:var(--silk)}
+.streak b{font:800 22px/1 var(--display);color:var(--copper)}
+
+.led{display:inline-block;width:10px;height:10px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+.led.opus{color:var(--opus)} .led.sonnet{color:var(--sonnet)} .led.haiku{color:var(--haiku)}
+
+/* bus de LEDs = barra de progreso */
+.bus{display:grid;grid-template-columns:repeat(20,1fr);gap:3px;height:14px}
+.bus i{background:var(--mask);border-radius:2px}
+.bus i.on{background:var(--copper);box-shadow:0 0 6px rgba(214,168,95,.55)}
+.bus i.boss{background:var(--alert);box-shadow:0 0 6px rgba(255,107,94,.6)}
+
+main{padding:24px}
+h1,h2,h3{margin:0;font-family:var(--display);font-weight:800;letter-spacing:.02em}
+
+/* ---------- Todos los proyectos ---------- */
+.placa{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.mod{position:relative;text-align:left;background:var(--board-2);border:1px solid var(--copper-dim);padding:18px 20px 18px 28px;
+  display:grid;gap:14px}
+.mod::before,.mod::after{content:"";position:absolute;left:8px;width:8px;height:8px;border-radius:50%;background:var(--board);border:2px solid var(--copper-dim)}
+.mod::before{top:10px}.mod::after{bottom:10px}
+.mod:hover{border-color:var(--copper)}
+.mod.live{border-color:var(--copper);box-shadow:0 0 0 1px var(--copper),0 0 24px rgba(214,168,95,.18)}
+.mod .row{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.mod h2{font-size:34px;line-height:1}
+.lvl{font:800 52px/0.9 var(--display);color:var(--copper)}
+.lvl small{display:block;font:500 12px/1.2 var(--sans);color:var(--silk-dim);letter-spacing:0}
+.mod p{margin:0;color:var(--silk-dim);font-size:14px}
+.mod .now{font:400 13px/1.35 var(--mono);color:var(--silk)}
+.mod .now .led{margin-right:8px}
+.mod .stat{display:flex;justify-content:space-between;font-size:13px;color:var(--silk-dim)}
+.mod .stat b{color:var(--silk);font-weight:600}
+.logros{margin-top:28px;display:flex;flex-wrap:wrap;gap:10px}
+.logro{border:1px solid var(--copper-dim);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center;background:var(--board-2)}
+.logro.off{opacity:.55}
+.logro b{color:var(--copper);font-weight:600}
+
+/* ---------- Un proyecto ---------- */
+.head{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;margin-bottom:22px}
+.head h1{font-size:clamp(44px,7vw,72px);line-height:.9}
+.head .sub{color:var(--silk-dim);margin-top:8px}
+.hito{margin-top:16px;max-width:620px}
+.hito .lab{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:var(--silk-dim)}
+.hito .lab b{color:var(--silk);font-weight:600}
+.ses{display:grid;grid-template-columns:repeat(3,auto);gap:4px 22px;padding:12px 16px;border:1px solid var(--copper-dim);background:var(--board-2);font-size:13px}
+.ses dt{color:var(--silk-dim)} .ses dd{margin:0;font:800 24px/1 var(--display);letter-spacing:.03em}
+.ses dd small{font:500 12px var(--sans);color:var(--silk-dim)}
+.budget{grid-column:1/-1;height:6px;background:var(--mask);margin-top:6px}
+.budget i{display:block;height:100%;width:42%;background:var(--haiku)}
+
+.layout{display:grid;grid-template-columns:1fr 330px;gap:22px;align-items:start}
+.cols{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));gap:14px;overflow-x:auto;padding-bottom:6px}
+.col h3{font-size:22px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--copper-dim);padding-bottom:6px;margin-bottom:12px}
+.col h3 span{font:500 13px var(--sans);color:var(--silk-dim)}
+.col.now h3{border-bottom-color:var(--copper)}
+.stack{display:grid;gap:12px;min-height:60px}
+
+/* tarjeta = componente con patillas */
+.chip{position:relative;background:var(--mask);border:1px solid var(--copper-dim);padding:12px 14px;margin:0 7px;cursor:grab;
+  background-image:
+   repeating-linear-gradient(to bottom,transparent 0 9px,var(--copper-dim) 9px 13px,transparent 13px 18px);
+  background-size:7px 100%;background-repeat:no-repeat;background-position:-7px 0}
+.chip::before,.chip::after{content:"";position:absolute;top:0;bottom:0;width:7px;
+  background:repeating-linear-gradient(to bottom,transparent 0 9px,var(--copper-dim) 9px 13px,transparent 13px 18px)}
+.chip::before{left:-8px}.chip::after{right:-8px}
+.chip .t{font-weight:600;font-size:14px;margin:0 0 8px}
+.chip .meta{display:flex;flex-wrap:wrap;gap:8px 12px;font-size:12px;color:var(--silk-dim);align-items:center}
+.chip .meta .m{display:flex;align-items:center;gap:6px;color:var(--silk)}
+.chip .dep{margin-top:8px;font-size:12px;color:var(--copper);border-top:1px dashed var(--copper-dim);padding-top:6px}
+.crit{display:flex;gap:3px;margin-top:8px}
+.crit i{width:16px;height:6px;background:var(--board)}
+.crit i.ok{background:var(--haiku)}
+.chip.active{border-color:var(--copper);background-color:var(--mask-2)}
+.chip.active .led{animation:pulse 1.6s ease-in-out infinite}
+.chip.done{opacity:.62}
+@keyframes pulse{50%{opacity:.35;box-shadow:none}}
+
+/* consola serie = feed en vivo */
+.feed{background:#0B1D1F;border:1px solid var(--copper-dim);position:sticky;top:12px}
+.feed header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--copper-dim)}
+.feed h3{font-size:22px}
+.feed .cnx{font-size:12px;color:var(--haiku);display:flex;gap:6px;align-items:center}
+.feed ol{list-style:none;margin:0;padding:8px 0;font:400 12.5px/1.5 var(--mono);max-height:430px;overflow:hidden}
+.feed li{display:grid;grid-template-columns:62px 14px 1fr;gap:6px;padding:5px 14px;align-items:start}
+.feed li time{color:var(--silk-dim)}
+.feed li .who{color:var(--silk-dim)}
+.feed li.new{animation:in .5s ease-out}
+@keyframes in{from{background:rgba(214,168,95,.28)}to{background:transparent}}
+.feed .tool{color:var(--copper)}
+.bar-m{display:none}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .feed{position:static;display:none}
+  .head{grid-template-columns:1fr}
+  .top{padding:10px 14px;flex-wrap:wrap;gap:8px}
+  .top .where{display:none}
+  main{padding:16px 14px 80px}
+  .cols{grid-template-columns:repeat(5,82vw);scroll-snap-type:x mandatory}
+  .col{scroll-snap-align:start}
+  .bar-m{display:flex;position:fixed;left:0;right:0;bottom:0;gap:10px;align-items:center;padding:12px 14px;background:#0B1D1F;border-top:1px solid var(--copper);font:400 12.5px var(--mono)}
+  .bar-m span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">HQ</div>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-go="global" aria-selected="false">Proyectos</button>
+    <button class="tab" role="tab" data-go="proj" aria-selected="true">Bot de Telegram</button>
+  </nav>
+  <div class="where">
+    <div class="streak"><b>6</b> días seguidos</div>
+    <div>Hoy: <b style="color:var(--silk);font-weight:600">3 tarjetas hechas</b></div>
+  </div>
+</div>
+
+<main>
+<!-- ============ TODOS LOS PROYECTOS ============ -->
+<section data-view="global" hidden>
+  <div class="placa">
+    <button class="mod live" data-open>
+      <div class="row"><h2>Bot de Telegram</h2><div class="lvl">5<small>nivel</small></div></div>
+      <div class="bus" aria-label="84 % completado"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i class="boss"></i></div>
+      <div class="now"><span class="led sonnet"></span>Editando nodo «Filtrar spam»</div>
+      <div class="stat"><span>Próximo jefe: <b>primer despliegue</b></span><span><b>84 %</b></span></div>
+    </button>
+    <button class="mod" data-open>
+      <div class="row"><h2>Estación meteo</h2><div class="lvl">3<small>nivel</small></div></div>
+      <div class="bus"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="boss"></i></div>
+      <p>Calibrar el sensor BME280 con la Arduino Nano</p>
+      <div class="stat"><span>Última actividad: ayer</span><span><b>62 %</b></span></div>
+    </button>
+    <button class="mod" data-open>
+      <div class="row"><h2>Servidor casero</h2><div class="lvl">2<small>nivel</small></div></div>
+      <div class="bus"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="boss"></i></div>
+      <p>Migrar los contenedores a Proxmox</p>
+      <div class="stat"><span>Dormido desde hace 9 días</span><span><b>30 %</b></span></div>
+    </button>
+    <button class="mod" data-open>
+      <div class="row"><h2>demo-hq</h2><div class="lvl">1<small>nivel</small></div></div>
+      <div class="bus"><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="boss"></i></div>
+      <p>Conectar NotebookLM</p>
+      <div class="stat"><span>Proyecto de prueba</span><span><b>12 %</b></span></div>
+    </button>
+  </div>
+  <div class="logros">
+    <div class="logro"><b>Primer despliegue</b> Bot de Telegram</div>
+    <div class="logro"><b>Racha de 5</b> conseguido</div>
+    <div class="logro off"><b>10 tarjetas sin fallo</b> 8 de 10</div>
+    <div class="logro off"><b>Sesión bajo presupuesto</b> en curso</div>
+  </div>
+</section>
+
+<!-- ============ UN PROYECTO ============ -->
+<section data-view="proj">
+  <div class="head">
+    <div>
+      <h1>Bot de Telegram</h1>
+      <div class="sub">Automatización con n8n para tu grupo y alertas del servidor</div>
+      <div class="hito">
+        <div class="lab"><span>Jefe: <b>primer despliegue</b></span><span><b>17 de 20</b> tarjetas</span></div>
+        <div class="bus"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i class="boss"></i></div>
+      </div>
+    </div>
+    <dl class="ses">
+      <dt>Modelo</dt><dt>Tokens</dt><dt>Coste</dt>
+      <dd><span class="led sonnet"></span> Sonnet</dd><dd>31,4<small> mil</small></dd><dd>0,42<small> $</small></dd>
+      <div class="budget" title="42 % del presupuesto de la sesión"><i></i></div>
+    </dl>
+  </div>
+
+  <div class="layout">
+    <div class="cols">
+      <section class="col"><h3>Ideas <span>1</span></h3><div class="stack">
+        <article class="chip"><p class="t">Resumen diario por voz</p><div class="meta"><span class="m"><span class="led opus"></span>Opus</span><span>sin skill</span></div></article>
+      </div></section>
+      <section class="col"><h3>Planificado <span>2</span></h3><div class="stack">
+        <article class="chip"><p class="t">Webhook de alertas del servidor</p><div class="meta"><span class="m"><span class="led sonnet"></span>Sonnet</span><span>skill n8n</span></div><div class="dep">espera: Flujo de moderación</div></article>
+        <article class="chip"><p class="t">Comando /gasto para finanzas</p><div class="meta"><span class="m"><span class="led sonnet"></span>Sonnet</span><span>~2 h</span></div></article>
+      </div></section>
+      <section class="col now"><h3>En curso <span>1</span></h3><div class="stack">
+        <article class="chip active"><p class="t">Flujo de moderación de grupo</p><div class="meta"><span class="m"><span class="led sonnet"></span>Sonnet · ejecutor</span><span>3 de 5 criterios</span></div><div class="crit"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i></i><i></i></div></article>
+      </div></section>
+      <section class="col"><h3>Verificando <span>1</span></h3><div class="stack">
+        <article class="chip"><p class="t">Validar la firma del webhook</p><div class="meta"><span class="m"><span class="led sonnet"></span>Sonnet · revisor</span><span>5 de 5 criterios</span></div><div class="crit"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></div></article>
+      </div></section>
+      <section class="col"><h3>Hecho <span>12</span></h3><div class="stack">
+        <article class="chip done"><p class="t">Almacenar chat_id en SQLite</p><div class="meta"><span>+40 XP</span><span>a la primera</span></div></article>
+        <article class="chip done"><p class="t">Plantilla de mensajes</p><div class="meta"><span>+25 XP</span></div></article>
+        <article class="chip done"><p class="t">Registrar el bot con BotFather</p><div class="meta"><span>+25 XP</span></div></article>
+      </div></section>
+    </div>
+
+    <aside class="feed" aria-label="Ahora mismo">
+      <header><h3>Ahora mismo</h3><span class="cnx"><span class="led haiku"></span>en vivo</span></header>
+      <ol id="feed">
+        <li><time>15:41:08</time><span class="led sonnet"></span><span><span class="tool">Read</span> flujos/moderacion.json</span></li>
+        <li><time>15:41:12</time><span class="led sonnet"></span><span><span class="tool">Edit</span> nodo «Filtrar spam»</span></li>
+        <li><time>15:41:20</time><span class="led haiku"></span><span><span class="tool">Grep</span> «chat_id» en 14 ficheros</span></li>
+        <li><time>15:41:31</time><span class="led sonnet"></span><span><span class="tool">Bash</span> npm test</span></li>
+        <li><time>15:41:34</time><span class="led opus"></span><span><span class="tool">NotebookLM</span> límites de la API de Telegram</span></li>
+      </ol>
+    </aside>
+  </div>
+</section>
+</main>
+
+<div class="bar-m" aria-live="polite"><span class="led sonnet"></span><span id="barm">Bash npm test</span></div>
+
+<script>
+const $$=s=>[...document.querySelectorAll(s)];
+function show(v){
+  $$('[data-view]').forEach(e=>e.hidden=e.dataset.view!==v);
+  $$('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.go===v)));
+}
+$$('.tab').forEach(t=>t.addEventListener('click',()=>show(t.dataset.go)));
+$$('[data-open]').forEach(e=>e.addEventListener('click',()=>show('proj')));
+show(new URLSearchParams(location.search).get('vista')==='global'?'global':'proj');
+
+const ev=[
+  ['sonnet','Read','src/estado.js'],['sonnet','Edit','nodo «Responder al grupo»'],
+  ['haiku','Glob','flujos/**/*.json'],['sonnet','Bash','npm test'],
+  ['opus','Agent','arquitecto revisa dependencias']
+];
+let n=0;
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  setInterval(()=>{
+    const [m,tool,txt]=ev[n++%ev.length], d=new Date();
+    const li=document.createElement('li'); li.className='new';
+    li.innerHTML=`<time>${d.toLocaleTimeString('es-ES')}</time><span class="led ${m}"></span><span><span class="tool">${tool}</span> ${txt}</span>`;
+    const ol=document.getElementById('feed'); ol.appendChild(li);
+    while(ol.children.length>9) ol.removeChild(ol.firstChild);
+    document.getElementById('barm').textContent=`${tool} ${txt}`;
+  },3800);
+}
+</script>
+</body>
+</html>

@@ -1,10 +1,67 @@
-# CC-more-of-claude · plantilla "Project HQ"
+# CC-more-of-claude · Project HQ
 
-Plantilla de un proyecto gestionado con **Claude Code** como orquestador: un tablero de tarjetas, una memoria
+Plugin de **Claude Code** (más el comando `cc`) y plantilla de proyecto para trabajar con Claude como orquestador: un tablero de tarjetas, una memoria
 persistente en una bóveda de Obsidian y un cuaderno de NotebookLM para los documentos largos. Los ficheros llevan
 marcadores `<ASÍ>` que sustituyes por tus propias rutas e ids.
 
 ![Tablero de ejemplo](docs/tablero.png)
+
+## Instalación (Windows 11)
+
+Project HQ son dos piezas que se instalan desde este mismo repo: el **plugin** de Claude Code (comandos `/idea`,
+`/planificar`, `/ejecutar`…, agentes y hooks) y el comando **`cc`** (tablero, feed y notas en Windows Terminal).
+
+### 1. Requisitos
+| Qué | Para qué | Comprobar |
+|---|---|---|
+| [Claude Code](https://claude.com/claude-code) | Orquestador | `claude --version` |
+| Node.js 22+ y Git | Scripts y hooks del plugin | `node -v` |
+| Python 3.12+ y [uv](https://docs.astral.sh/uv/) | El comando `cc` | `uv --version` |
+| [Windows Terminal](https://aka.ms/terminal) | Paneles de `cc` | `wt -?` |
+| [Backlog.md](https://github.com/MrLesk/Backlog.md) | Tarjetas | `npm i -g backlog.md` |
+| [Obsidian](https://obsidian.md) *(opcional)* | Memoria del proyecto | |
+| `nlm` *(opcional)* | NotebookLM | `uv tool install notebooklm-mcp-cli` |
+
+### 2. Instalar
+```powershell
+git clone https://github.com/alikoubiiss/CC-more-of-claude.git
+cd CC-more-of-claude
+npm test                                   # opcional: debe salir todo en verde
+node scripts/setup.mjs                     # crea tu config en %USERPROFILE%\.project-hq\config.json
+uv tool install --editable .\tui           # instala el comando `cc`
+claude plugin marketplace add "$PWD"
+claude plugin install project-hq@project-hq-local
+node scripts/doctor.mjs                    # comprueba backlog, nlm, rutas...
+```
+`setup.mjs` acepta `--vault <ruta>`, `--proyectos <ruta>`, `--perfil-nlm <nombre>` y `--puerto <n>`. Si usas
+NotebookLM: `nlm login --profile hq` (mejor con una cuenta de Google secundaria).
+
+### 3. Usarlo
+```powershell
+cd <la-carpeta-de-tu-proyecto>
+cc start        # abre Claude Code, el tablero, el feed y las notas del proyecto
+```
+Dentro de Claude Code: `/project-hq:nuevo-proyecto <nombre>` crea el repo, el tablero, la nota en el vault y el
+cuaderno; después `/idea` → `/planificar` → `/ejecutar` → `/revisar`.
+
+### 4. Qué es tuyo y no se sube a GitHub
+Todo lo personal queda fuera del repo (`.gitignore`). Esto es lo que tienes que poner tú:
+
+| Qué | Dónde | Qué poner |
+|---|---|---|
+| Config global | `%USERPROFILE%\.project-hq\config.json` (la crea `setup.mjs`; plantilla en `config.example.json`) | `vaultPath` (tu bóveda de Obsidian), `projectsRoot` (donde viven tus proyectos), `dataDir` (absoluta; estado, registro y métricas), `nlmProfile`, `basePort`, `presupuesto` |
+| Perfil de NotebookLM | `nlm login --profile <nlmProfile>` | Tu cuenta de Google; las credenciales las guarda `nlm`, nunca este repo |
+| Clave de Obsidian *(opcional)* | variable de entorno `HQ_OBSIDIAN_KEY` | La API key del plugin *Local REST API* de Obsidian |
+| Proyecto | `.hq/project.json` (copia de `.hq/project.example.json`) | Slug, id de tu cuaderno de NotebookLM y puerto |
+| Reglas del proyecto | `CLAUDE.md` | Sustituye los marcadores `<RUTA_DE_TU_BOVEDA>`, `<ID_DEL_CUADERNO>`, `<PUERTO>`… |
+| Redactor de datos personales *(opcional)* | `vault-redactor.json` junto a la config | Tus términos a ocultar al exportar notas al vault de HQ (ejemplo en `templates/`) |
+
+La config se busca en este orden: variable `HQ_CONFIG`, `%USERPROFILE%\.project-hq\config.json` y, por último,
+un `config.json` junto al código. Nunca subas ese fichero, tus ids de cuaderno ni tu clave de Obsidian.
+
+### 5. Actualizar
+`git pull` en tu clon y `claude plugin update project-hq@project-hq-local`. Tu config y tu estado no se tocan
+porque viven en `%USERPROFILE%\.project-hq`.
 
 ## Qué hace
 
@@ -52,14 +109,12 @@ docs/tablero.png           captura del tablero `cc`
 
 ## Adaptarlo a tu caso
 
-### 1. Requisitos
+### 1. Dependencias de la plantilla
 - [Claude Code](https://claude.com/claude-code)
 - [Backlog.md](https://github.com/MrLesk/Backlog.md) (`backlog` en el PATH)
 - Node.js (los comandos del plugin usan scripts `.mjs`)
 - Opcional: una bóveda de [Obsidian](https://obsidian.md) y el CLI `nlm` para NotebookLM
-- El plugin `project-hq` (comandos `/idea`, `/planificar`, `/ejecutar`, `/revisar`, `/guardar`, `/retomar`
-  y los agentes) y, opcionalmente, el tablero de terminal `cc`. Este repo es la plantilla del proyecto; el plugin
-  se instala aparte.
+- El plugin `project-hq` y el comando `cc` (ver **Instalación** arriba).
 
 ### 2. Sustituye los marcadores
 
@@ -84,3 +139,62 @@ rutas nunca se suben).
 - **Fases**: `.hq/fases.example.json` (un `milestone` por fase, `aprobada: null` hasta que la apruebes).
 - **Tarjetas**: borra las de `backlog/tasks/` y `backlog/milestones/` (son ejemplos) y deja que `/planificar` cree las tuyas.
 - **Sin Obsidian o sin NotebookLM**: elimina las reglas correspondientes de `CLAUDE.md`; el flujo de tarjetas funciona igual.
+
+# Referencia del plugin
+
+## Comando `cc` en la terminal
+Paneles en Windows Terminal: Claude Code, tablero vivo y foco (tarjeta activa, contexto, coste, git).
+- **Instalar `cc`:** `uv tool install --editable "<ruta>\project-hq\tui"` (deja `cc.exe` en `~\.local\bin`). Tests: `cd tui && PYTHONUTF8=1 .venv\Scripts\python.exe -m unittest discover -s tests -t .`
+- **Uso diario:** **`cc start`** (lo más fácil: abre todo del proyecto de la carpeta donde estás; fuera de un proyecto, la lista; también `cc start <proyecto>`), `cc` (todos los proyectos; Enter abre uno), `cc board|feed|notes|focus [proyecto]` (sin nombre usa el proyecto de la carpeta actual), `cc open <proyecto>` (abre la ventana maximizada con Claude, tablero y foco en una sola pestaña). `/nuevo-proyecto` la abre solo al terminar.
+- **Teclas del tablero:** flechas/`hjkl` mover, Enter detalle (descripción, criterios, comentarios), **`e` ejecuta** la tarjeta seleccionada (Planificado o En curso) y **`v` la revisa** (Verificando sin revisar): piden confirmación y abren Claude Code en una pestaña nueva de la ventana actual con `/project-hq:ejecutar` o `/project-hq:revisar` ya escrito; `>` y `<` mueven la tarjeta seleccionada de columna (a «Hecho» solo se llega aprobando con `a`), `c` compacto, `r` refrescar, `q` salir.
+- **Tamaño de los paneles:** son paneles de Windows Terminal y se ajustan a tu gusto con **Alt+Mayús+flechas** (el tablero se adapta solo; con poco ancho pasa a modo compacto y se desplaza). Windows Terminal no ofrece un comando para redimensionar desde dentro de un panel. Notas: `o` abre en Obsidian, `e` en el editor.
+- `node scripts/hq-open.mjs <proyecto> --dry-run` muestra el reparto de paneles que abrirá `wt.exe`.
+- **Puertas humanas:** ninguna tarjeta pasa a «Hecho» ni ninguna fase avanza sin ti. En `cc`: `a`/`m` (aprobar/mejorar tarjeta, solo en «Verificando» con `revisada`) y `A`/`M` (fase lista), siempre con diálogo de confirmación. Sin `hq`, a mano: `! backlog task edit <id> --status Hecho` en el prompt de Claude Code, y `node scripts/fases.mjs approve <id>` en tu propia terminal. Un hook (`hooks/gate.mjs`) bloquea a los agentes que lo intenten (defensa en profundidad, no garantía).
+- Fases: `node scripts/fases.mjs set|status` (hitos de Backlog.md; solo trabaja la fase activa).
+- Statusline: `scripts/statusline.mjs` (se activa en `~/.claude/settings.json`). Eventos en `<dataDir>\events\` y estado de sesión en `<dataDir>\state\`; ni prompts ni respuestas de herramientas se guardan, y los secretos comunes se redactan.
+
+
+## Gasto de tokens y progreso
+Para controlar y reducir el gasto: la statusline de Claude Code guarda un historial **solo con números** (coste, tokens, modelo y tarjeta: la «En curso» o, si no hay, la de «Verificando» aún sin `revisada` tocada más tarde) en `<dataDir>\metrics\<proyecto>\AAAA-MM-DD.jsonl`, y los hooks anotan el uso de la memoria (consultas a NotebookLM, lecturas del vault y de `Conocimiento`, contexto inyectado al empezar). Nada de texto de prompts ni respuestas; se conserva 400 días.
+- **`cc stats [proyecto]`:** gasto de hoy, semana y mes, por proyecto, por tarjeta y por modelo, tendencia de 14 días, uso de la memoria y tu progreso (nivel, XP, racha, logros). El modelo es el **principal de la sesión**: los subagentes cuentan dentro de la sesión pero Claude Code no da su coste aparte. Una sesión que ya estaba en marcha al activar el sistema no arrastra lo gastado antes.
+- **Presupuesto (`config.json` → `presupuesto: {diaUsd, tarjetaUsd}`):** al 80 % y al 100 % aparece `⚠ día 82%` / `⚠ TASK-3 104%` en la statusline (ámbar y rojo), en `cc stats` y en el tablero. **No bloquea nada.** Los valores iniciales (50 y 15 USD) son un punto de partida: cámbialos.
+- **XP (solo por lo que verificas tú):** tarjeta aprobada +10 (+5 si costó menos que `tarjetaUsd`), fase aprobada +50, día cerrado con gasto dentro de `diaUsd` +5. 10 niveles y 10 logros; todo se calcula al leer, sin base de datos propia. No hay estimaciones de ahorro: el panel muestra el gasto real y su tendencia.
+
+
+## Comandos
+| Comando | Qué hace |
+|---|---|
+| `/nuevo-proyecto <nombre>` | Repo + Backlog.md + nota en el vault + cuaderno NotebookLM + abre el tablero |
+| `/idea` | Entrevista (≤5 preguntas por ronda) |
+| `/planificar` | Arquitectura, decisiones y tarjetas con criterios, modelo y esfuerzo (Opus); pasa el lint de tarjetas |
+| `/ejecutar [id\|siguiente]` | Una tarjeta con el subagente `ejecutor`, con el modelo y el esfuerzo de la tarjeta |
+| `/revisar` | Verificación independiente (`revisor`), con el modelo de revisor de la tarjeta |
+| `/guardar` | Resumen de sesión y estado al vault |
+| `/retomar` | Índice + tarjeta activa + últimas decisiones |
+
+Los comandos aparecen como `/project-hq:<comando>` si hay conflicto de nombres.
+
+
+## Modelo y esfuerzo por tarjeta
+Al crear cada tarjeta, el `arquitecto` le pone las etiquetas `modelo:<haiku|sonnet|opus>`, `esfuerzo:<medium|high|xhigh>`, `riesgo:<bajo|medio|alto>` y `est:<minutos>` (además de `skill:`). `/ejecutar` y `/revisar` las leen con `node scripts/modelo-tarjeta.mjs <id>` y llaman al subagente con `model` y `effort` explícitos (tienen prioridad sobre el frontmatter del agente). Se prioriza el modelo más barato que alcance: **Haiku** para lo mínimo (siempre con esfuerzo `medium`), **Sonnet** para lo corriente y **Opus** (el tope) solo para lo difícil. Haiku también explora (`explorador`, `skill-scout`).
+
+| Tipo de tarea | Ejecutor | Revisor |
+|---|---|---|
+| Arquitectura, seguridad, concurrencia, migraciones o datos irreversibles | opus / xhigh | opus / high + tarjeta `Verificar TASK-n` |
+| Lógica compleja, integraciones externas, rendimiento | opus / high | opus / high |
+| Interfaz con criterio visual, refactor amplio (>5 ficheros) | opus / medium | opus / high |
+| Funcionalidad corriente, tests, refactor mecánico acotado | sonnet / high | sonnet / high |
+| Docs, configuración, cambios triviales (1 fichero, 1-2 criterios) | haiku / medium | sonnet / medium |
+| Cambios pequeños con algo de lógica | sonnet / medium | sonnet / medium |
+| Cambios pequeños con algo de lógica | sonnet / medium | sonnet / medium |
+
+- **Rúbrica** (si faltan etiquetas, y como aviso del lint): +2 por seguridad o datos, concurrencia, >3 criterios, >5 ficheros, criterio ambiguo, ≥2 tarjetas dependientes. 0 y tarjeta mínima → haiku; 0 en el resto o 2-4 → sonnet/high; ≥6 → opus/high; `riesgo:alto` → opus/xhigh.
+- **Revisor:** nunca más débil que la tarjeta ni que el ejecutor tras escalar; `riesgo:alto` → opus/high. Sigue sin ver la implementación y solo tú mueves a «Hecho».
+- **Escalera de reintentos:** cada comentario `Falta:` (del revisor o tuyo con la tecla `m`) sube un peldaño: nivel de la tarjeta → sonnet/high → opus/high → opus/xhigh. Tras 2 rechazos en opus/xhigh, `parar: true`: `/ejecutar` no lanza nada y pide dividir la tarjeta.
+- **Rastro:** ejecutor y revisor dejan `Modelo: <alias>/<esfuerzo> intento <n>` en la tarjeta (`modelo-tarjeta.mjs <id> --registrar ejecutor|revisor`). Los eventos guardan el modelo pedido al lanzar el subagente (`req_model`, `req_effort`) y, en SubagentStop, el de ese comentario (`model_src: tarjeta`); en SubagentStart (y si no hay comentario) el del frontmatter como respaldo (`model_src: mapa`).
+- **Lint:** `node scripts/lint-tarjetas.mjs [TASK-n…] [--todas] [--json]` (por defecto las tarjetas en «Planificado»). Rechaza tarjetas sin `modelo:`/`esfuerzo:`/`est:`, sin descripción, con <2 o >5 criterios, `est:` >90, modelo distinto de haiku/sonnet/opus, `haiku` con esfuerzo distinto de medium, `riesgo:alto` sin opus o sin su `Verificar TASK-n`; avisa si contradice la rúbrica. Sale con código 1 si hay errores.
+- **Sin gastar tokens desde el tablero:** `i` pasa una tarjeta de Planificado a En curso sin lanzar Claude (respeta las fases pendientes) y abre su editor; `E` edita título, descripción, criterios (separados por `|`), modelo y esfuerzo de una tarjeta en Planificado o En curso.
+
+
+## Tests
+`npm test` (hermético: carpetas temporales y runners simulados; no toca el vault real).

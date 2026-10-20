@@ -2,3 +2,18 @@
 .hq/project.json
 .env
 *.local.*
+
+# Estado y config propia de Project HQ (rutas, vault, registro, métricas)
+/config.json
+/registry.json
+/vault-redactor.json
+state/
+events/
+metrics/
+.superpowers/
+*.tmp
+*.corrupt-*
+__pycache__/
+.venv/
+.pytest_cache/
+*.egg-info/

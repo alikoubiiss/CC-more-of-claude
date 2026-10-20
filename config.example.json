@@ -1,0 +1,12 @@
+{
+  "vaultPath": "C:\Users\TU_USUARIO\ProjectHQ-vault",
+  "projectsRoot": "C:\Users\TU_USUARIO\proyectos",
+  "vaultProjectsDir": "Proyectos",
+  "nlmProfile": "hq",
+  "basePort": 6430,
+  "backupsDir": "backups",
+  "dataDir": "C:\Users\TU_USUARIO\.project-hq",
+  "eventsRetentionDays": 7,
+  "conocimientoDir": "Conocimiento",
+  "presupuesto": { "diaUsd": 50, "tarjetaUsd": 15 }
+}

@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flujo HQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Syne:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#1E2230; --dot:#2E3447; --node:#272D3F; --node-2:#303750; --line:#3B4360;
+  --ink:#EEF0F8; --dim:#98A0BC; --iris:#8B7CFF; --amber:#FFC86B;
+  --opus:#C58BFF; --sonnet:#6EA8FF; --haiku:#5ED3C2; --boss:#FF7A8A;
+  --display:"Syne","Trebuchet MS",sans-serif; --sans:"Hanken Grotesk",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{color-scheme:dark}
+body{margin:0;background:var(--canvas);color:var(--ink);font:400 15px/1.45 var(--sans);min-height:100vh;
+  background-image:radial-gradient(var(--dot) 1.2px,transparent 1.4px);background-size:22px 22px}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--iris);outline-offset:2px}
+[hidden]{display:none!important}
+h1,h2,h3{margin:0;font-family:var(--display);font-weight:800;letter-spacing:-.01em}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:currentColor;flex:none}
+.dot.opus{color:var(--opus)} .dot.sonnet{color:var(--sonnet)} .dot.haiku{color:var(--haiku)}
+
+/* barra flotante */
+.bar{position:sticky;top:12px;z-index:5;margin:12px auto 0;width:max-content;max-width:calc(100% - 24px);display:flex;align-items:center;gap:6px;
+  padding:6px 8px;border-radius:99px;background:rgba(39,45,63,.92);backdrop-filter:blur(8px);border:1px solid var(--line)}
+.bar .brand{font:800 15px var(--display);padding:0 12px 0 10px}
+.bar button{background:none;border:0;border-radius:99px;padding:8px 16px;color:var(--dim);font-weight:500}
+.bar button[aria-selected="true"]{background:var(--iris);color:#14112B}
+.bar .xp{padding:0 12px 0 14px;font-size:13px;color:var(--dim);white-space:nowrap}
+.bar .xp b{color:var(--amber);font-weight:600}
+
+main{padding:26px 24px 60px;max-width:1500px;margin:0 auto}
+
+/* ===== todos los proyectos ===== */
+.todos h1{font-size:clamp(28px,4vw,44px);margin:20px 0 28px}
+.nodos{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:26px 30px;align-items:start}
+.pn{position:relative;text-align:left;background:var(--node);border:1px solid var(--line);border-radius:16px;padding:18px 20px 20px;display:grid;gap:12px;transition:border-color .2s}
+.pn:nth-child(2){margin-top:34px}.pn:nth-child(4){margin-top:34px}
+.pn:hover{border-color:var(--iris)}
+.pn.vivo{border-color:var(--amber)}
+.pn::before,.pn::after{content:"";position:absolute;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;background:var(--canvas);border:2px solid var(--iris)}
+.pn::before{left:-7px}.pn::after{right:-7px}
+.pn h2{font-size:18px;line-height:1.1}
+.pn .row{display:flex;justify-content:space-between;align-items:baseline}
+.pn .lv{font-size:13px;color:var(--dim)} .pn .lv b{color:var(--ink);font-family:var(--display);font-size:18px}
+.pn p{margin:0;color:var(--dim);font-size:14px}
+.pn .ahora{display:flex;gap:8px;align-items:center;font-size:13.5px}
+.pipe{display:flex;align-items:center}
+.pipe i{width:12px;height:12px;border-radius:50%;background:var(--canvas);border:2px solid var(--line);flex:none}
+.pipe u{flex:1;min-width:2px;height:2px;background:var(--line)}
+.pipe i.d{background:var(--iris);border-color:var(--iris)}
+.pipe u.d{background:var(--iris)}
+.pipe i.b{border-color:var(--boss)}
+.pipe i.n{background:var(--amber);border-color:var(--amber);box-shadow:0 0 0 4px rgba(255,200,107,.18)}
+.pn .pie{display:flex;justify-content:space-between;font-size:13px;color:var(--dim)} .pn .pie b{color:var(--ink);font-weight:600}
+.logros{margin-top:34px;display:flex;flex-wrap:wrap;gap:10px}
+.ins{padding:7px 14px;border-radius:99px;border:1px solid var(--line);font-size:13px}
+.ins.on{border-color:var(--iris);background:rgba(139,124,255,.14)}
+.ins.off{color:var(--dim)}
+
+/* ===== un proyecto ===== */
+.ph{display:flex;flex-wrap:wrap;gap:18px 40px;align-items:flex-end;margin:18px 0 26px}
+.ph h1{font-size:clamp(30px,4.6vw,52px);line-height:1}
+.ph .sub{color:var(--dim);margin-top:6px}
+.ph .pipe{flex:1;min-width:300px;max-width:640px;margin-bottom:6px}
+.ph .pl{display:flex;justify-content:space-between;font-size:13px;color:var(--dim);margin-bottom:8px}
+.ph .pl b{color:var(--ink);font-weight:600}
+.ses{display:flex;gap:22px;font-size:12.5px;color:var(--dim)}
+.ses b{display:block;color:var(--ink);font:800 20px/1.1 var(--display)}
+.ses .gas{height:5px;background:var(--line);border-radius:9px;margin-top:6px;overflow:hidden}
+.ses .gas i{display:block;height:100%;width:42%;background:var(--haiku)}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:22px;align-items:start}
+.lienzo{position:relative;overflow:hidden;border-radius:18px;border:1px solid var(--line);background:rgba(20,23,35,.45)}
+.mesa{position:relative;width:1366px;height:480px}
+.lane{position:absolute;top:0;bottom:0;width:254px;border-left:1px dashed var(--line)}
+.lane h3{position:absolute;top:14px;left:20px;font-size:15px}
+.lane h3 span{font:500 13px var(--sans);color:var(--dim);margin-left:6px}
+.card{position:absolute;width:210px;background:var(--node);border:1px solid var(--line);border-radius:12px;padding:11px 13px;cursor:grab}
+.card .t{margin:0 0 8px;font-weight:600;font-size:14px;line-height:1.3}
+.card .meta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:var(--dim);align-items:center}
+.card .m{display:flex;gap:6px;align-items:center;color:var(--ink)}
+.crit{display:flex;gap:3px;margin-top:9px}
+.crit i{flex:1;height:4px;border-radius:9px;background:var(--line)}
+.crit i.ok{background:var(--haiku)}
+.card.run{border-color:var(--amber);background:var(--node-2)}
+.card.run .m .dot{animation:blink 1.4s ease-in-out infinite}
+.card.fin{opacity:.66}
+@keyframes blink{50%{opacity:.3}}
+.cables{position:absolute;inset:0;pointer-events:none}
+.cables path{fill:none;stroke:var(--iris);stroke-width:2}
+.cables .h{fill:var(--canvas);stroke:var(--iris);stroke-width:2}
+.cables text{fill:var(--dim);font:500 11px var(--sans);text-anchor:middle}
+.dep{display:none;margin-top:8px;font-size:12px;color:var(--iris)}
+
+.reg{background:var(--node);border:1px solid var(--line);border-radius:18px;position:sticky;top:76px}
+.reg header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 6px}
+.reg h3{font-size:16px}
+.reg .on{font-size:12px;color:var(--haiku);display:flex;gap:6px;align-items:center}
+.reg ol{list-style:none;margin:0;padding:6px 18px 16px 26px;position:relative;max-height:440px;overflow:hidden}
+.reg ol::before{content:"";position:absolute;left:30px;top:14px;bottom:20px;border-left:2px solid var(--line)}
+.reg li{position:relative;padding:0 0 13px 22px;font-size:13.5px;line-height:1.35}
+.reg li .dot{position:absolute;left:0;top:4px;box-shadow:0 0 0 4px var(--node)}
+.reg li time{display:block;font-size:11.5px;color:var(--dim)}
+.reg li.new{animation:in .6s ease-out}
+@keyframes in{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+.mini{display:none}
+
+@media (max-width:980px){
+  main{padding:14px 14px 90px}
+  .nodos{grid-template-columns:1fr}.pn:nth-child(n){margin-top:0}
+  .pn::before,.pn::after{display:none}
+  .layout{grid-template-columns:1fr}
+  .reg{display:none}
+  .lienzo{border:0;background:none;overflow:visible}
+  .mesa{width:auto;height:auto;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px}
+  .lane{position:static;flex:0 0 82vw;scroll-snap-align:start;border-left:0;display:grid;gap:10px;align-content:start}
+  .lane h3{position:static;margin-bottom:2px}
+  .card{position:static;width:auto}
+  .cables{display:none}
+  .dep{display:block}
+  .bar .xp{display:none}
+  .ses{gap:14px}.ses b{font-size:15px}
+  .mini{display:flex;position:fixed;left:10px;right:10px;bottom:10px;z-index:6;gap:10px;align-items:center;padding:12px 16px;border-radius:99px;background:var(--node-2);border:1px solid var(--line);font-size:13.5px}
+  .mini span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<nav class="bar" role="tablist">
+  <span class="brand">HQ</span>
+  <button role="tab" data-go="todos" aria-selected="false">Proyectos</button>
+  <button role="tab" data-go="proj" aria-selected="true">Bot de Telegram</button>
+  <span class="xp">Nivel <b>5</b> · 6 días seguidos</span>
+</nav>
+
+<main>
+<!-- ===== TODOS ===== -->
+<section class="todos" data-view="todos" hidden>
+  <h1>Tus proyectos</h1>
+  <div class="nodos">
+    <button class="pn vivo" data-open>
+      <div class="row"><h2>Bot de Telegram</h2><span class="lv">nivel <b>5</b></span></div>
+      <div class="pipe" aria-label="17 de 20 tarjetas"><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="n"></i><u></u><i></i><u></u><i class="b"></i></div>
+      <div class="ahora"><span class="dot sonnet"></span>Editando el nodo «Filtrar spam»</div>
+      <div class="pie"><span>Siguiente hito: <b>primer despliegue</b></span><b>84 %</b></div>
+    </button>
+    <button class="pn" data-open>
+      <div class="row"><h2>Estación meteo</h2><span class="lv">nivel <b>3</b></span></div>
+      <div class="pipe"><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="n"></i><u></u><i></i><u></u><i></i><u></u><i class="b"></i></div>
+      <p>Calibrar el sensor BME280 con la Arduino Nano</p>
+      <div class="pie"><span>Última actividad: ayer</span><b>62 %</b></div>
+    </button>
+    <button class="pn" data-open>
+      <div class="row"><h2>Servidor casero</h2><span class="lv">nivel <b>2</b></span></div>
+      <div class="pipe"><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="n"></i><u></u><i></i><u></u><i></i><u></u><i></i><u></u><i class="b"></i></div>
+      <p>Migrar los contenedores a Proxmox</p>
+      <div class="pie"><span>Dormido desde hace 9 días</span><b>30 %</b></div>
+    </button>
+    <button class="pn" data-open>
+      <div class="row"><h2>demo-hq</h2><span class="lv">nivel <b>1</b></span></div>
+      <div class="pipe"><i class="n"></i><u></u><i></i><u></u><i></i><u></u><i></i><u></u><i class="b"></i></div>
+      <p>Conectar NotebookLM</p>
+      <div class="pie"><span>Proyecto de prueba</span><b>12 %</b></div>
+    </button>
+  </div>
+  <div class="logros">
+    <span class="ins on">Primer despliegue</span><span class="ins on">Racha de 5 días</span>
+    <span class="ins off">10 tarjetas sin fallo: 8 de 10</span><span class="ins off">Sesión bajo presupuesto</span>
+  </div>
+</section>
+
+<!-- ===== PROYECTO ===== -->
+<section data-view="proj">
+  <div class="ph">
+    <div>
+      <h1>Bot de Telegram</h1>
+      <div class="sub">Automatización con n8n para tu grupo y alertas del servidor</div>
+    </div>
+    <div style="flex:1;min-width:300px;max-width:640px">
+      <div class="pl"><span>Hito: <b>primer despliegue</b></span><span><b>17 de 20</b> tarjetas</span></div>
+      <div class="pipe" style="margin:0"><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="d"></i><u class="d"></u><i class="n"></i><u></u><i></i><u></u><i class="b"></i></div>
+    </div>
+    <div class="ses">
+      <div>Modelo<b><span class="dot sonnet"></span> Sonnet</b></div>
+      <div>Tokens<b>31,4 mil</b></div>
+      <div>Coste<b>0,42 $</b><div class="gas" title="42 % del presupuesto"><i></i></div></div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="lienzo">
+      <div class="mesa">
+        <div class="lane" style="left:16px"><h3>Ideas<span>1</span></h3></div>
+        <div class="lane" style="left:286px"><h3>Planificado<span>2</span></h3></div>
+        <div class="lane" style="left:556px"><h3>En curso<span>1</span></h3></div>
+        <div class="lane" style="left:826px"><h3>Verificando<span>1</span></h3></div>
+        <div class="lane" style="left:1096px"><h3>Hecho<span>12</span></h3></div>
+
+        <article class="card" data-lane="0" style="left:24px;top:76px"><p class="t">Resumen diario por voz</p><div class="meta"><span class="m"><span class="dot opus"></span>Opus</span><span>sin skill</span></div></article>
+
+        <article class="card" data-lane="1" style="left:294px;top:76px"><p class="t">Webhook de alertas del servidor</p><div class="meta"><span class="m"><span class="dot sonnet"></span>Sonnet</span><span>skill n8n</span></div><div class="dep">espera a: Flujo de moderación</div></article>
+        <article class="card" data-lane="1" style="left:294px;top:214px"><p class="t">Comando /gasto para finanzas</p><div class="meta"><span class="m"><span class="dot sonnet"></span>Sonnet</span><span>unas 2 h</span></div></article>
+
+        <article class="card run" data-lane="2" style="left:564px;top:150px"><p class="t">Flujo de moderación de grupo</p><div class="meta"><span class="m"><span class="dot sonnet"></span>Sonnet, ejecutor</span><span>3 de 5</span></div><div class="crit"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i></i><i></i></div></article>
+
+        <article class="card" data-lane="3" style="left:834px;top:76px"><p class="t">Validar la firma del webhook</p><div class="meta"><span class="m"><span class="dot sonnet"></span>Sonnet, revisor</span><span>5 de 5</span></div><div class="crit"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></div></article>
+
+        <article class="card fin" data-lane="4" style="left:1104px;top:76px"><p class="t">Almacenar chat_id en SQLite</p><div class="meta"><span>a la primera</span><span style="color:var(--amber)">+40 XP</span></div></article>
+        <article class="card fin" data-lane="4" style="left:1104px;top:172px"><p class="t">Plantilla de mensajes</p><div class="meta"><span style="color:var(--amber)">+25 XP</span></div></article>
+        <article class="card fin" data-lane="4" style="left:1104px;top:252px"><p class="t">Registrar el bot con BotFather</p><div class="meta"><span style="color:var(--amber)">+25 XP</span></div></article>
+
+        <svg class="cables" viewBox="0 0 1366 480" aria-hidden="true">
+          <path d="M504 132 C534 132 534 214 564 214"/>
+          <path d="M774 214 C804 214 804 132 834 132"/>
+          <circle class="h" cx="504" cy="132" r="5"/><circle class="h" cx="564" cy="214" r="5"/>
+          <circle class="h" cx="774" cy="214" r="5"/><circle class="h" cx="834" cy="132" r="5"/>
+          <text x="534" y="168">espera</text><text x="804" y="176">alimenta</text>
+        </svg>
+      </div>
+    </div>
+
+    <aside class="reg" aria-label="Ahora mismo">
+      <header><h3>Ahora mismo</h3><span class="on"><span class="dot haiku"></span>en vivo</span></header>
+      <ol id="feed">
+        <li><span class="dot sonnet"></span>Lee <b>flujos/moderacion.json</b><time>15:41:08</time></li>
+        <li><span class="dot sonnet"></span>Edita el nodo <b>«Filtrar spam»</b><time>15:41:12</time></li>
+        <li><span class="dot haiku"></span>Busca <b>«chat_id»</b> en 14 ficheros<time>15:41:20</time></li>
+        <li><span class="dot sonnet"></span>Ejecuta <b>npm test</b><time>15:41:31</time></li>
+        <li><span class="dot opus"></span>Pregunta a NotebookLM por los <b>límites de la API de Telegram</b><time>15:41:34</time></li>
+      </ol>
+    </aside>
+  </div>
+</section>
+</main>
+
+<div class="mini" aria-live="polite"><span class="dot sonnet"></span><span id="barm">Ejecuta npm test</span></div>
+
+<script>
+const $$=s=>[...document.querySelectorAll(s)];
+function show(v){
+  $$('[data-view]').forEach(e=>e.hidden=e.dataset.view!==v);
+  $$('.bar button').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.go===v)));
+}
+$$('.bar button').forEach(t=>t.addEventListener('click',()=>show(t.dataset.go)));
+$$('[data-open]').forEach(e=>e.addEventListener('click',()=>show('proj')));
+show(new URLSearchParams(location.search).get('vista')==='todos'?'todos':'proj');
+function fit(){const l=document.querySelector('.lienzo'),m=document.querySelector('.mesa');
+  const movil=matchMedia('(max-width:980px)').matches, lanes=[...m.querySelectorAll('.lane')], svg=m.querySelector('.cables');
+  $$('.card').forEach(c=>{
+    const destino=movil?lanes[+c.dataset.lane]:m;
+    if(c.parentElement!==destino) movil?destino.appendChild(c):m.insertBefore(c,svg);
+  });
+  if(movil){m.style.zoom='';return;}
+  m.style.zoom=Math.min(1,l.clientWidth/1366);}
+addEventListener('resize',fit);addEventListener('load',fit);fit();
+const ev=[['sonnet','Lee','<b>src/estado.js</b>'],['sonnet','Edita el nodo','<b>«Responder al grupo»</b>'],['haiku','Busca','<b>flujos/**/*.json</b>'],['sonnet','Ejecuta','<b>npm test</b>'],['opus','Revisa las dependencias con el','<b>arquitecto</b>']];
+let n=0;
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  setInterval(()=>{
+    const [m,v,t]=ev[n++%ev.length], d=new Date().toLocaleTimeString('es-ES');
+    const li=document.createElement('li'); li.className='new';
+    li.innerHTML=`<span class="dot ${m}"></span>${v} ${t}<time>${d}</time>`;
+    const ol=document.getElementById('feed'); ol.appendChild(li);
+    while(ol.children.length>7) ol.removeChild(ol.firstChild);
+    document.getElementById('barm').innerHTML=`${v} ${t}`;
+  },3800);
+}
+</script>
+</body>
+</html>
