@@ -10,39 +10,52 @@ marcadores `<ASÍ>` que sustituyes por tus propias rutas e ids.
 
 Project HQ son dos piezas que se instalan desde este mismo repo: el **plugin** de Claude Code (comandos `/idea`,
 `/planificar`, `/ejecutar`…, agentes y hooks) y el comando **`cc`** (tablero, feed y notas en Windows Terminal).
+Solo funciona en **Windows** (usa `wt.exe` y `clip.exe`).
 
-### 1. Requisitos
-| Qué | Para qué | Comprobar |
+### 1. Programas que necesitas
+**Obligatorios**
+
+| Programa | Para qué sirve | Instalar | Comprobar |
+|---|---|---|---|
+| [Claude Code](https://claude.com/claude-code) | Orquestador: ejecuta el plugin | ver su web | `claude --version` |
+| [Node.js](https://nodejs.org) 22+ | Scripts y hooks del plugin; trae `npm` | `winget install OpenJS.NodeJS` | `node -v` |
+| [Git](https://git-scm.com) | Clonar el repo y los repos de tus proyectos | `winget install Git.Git` | `git --version` |
+| [Backlog.md](https://github.com/MrLesk/Backlog.md) | Las tarjetas y el tablero | `npm i -g backlog.md` | `backlog --version` |
+| [uv](https://docs.astral.sh/uv/) | Instala `cc`; descarga Python 3.12 si no lo tienes | `winget install astral-sh.uv` | `uv --version` |
+| [Windows Terminal](https://aka.ms/terminal) | Los paneles de `cc start` (usa `wt.exe`) | `winget install Microsoft.WindowsTerminal` | `where wt` |
+
+**Opcionales** (sin ellos el flujo de tarjetas funciona igual)
+
+| Programa | Para qué sirve | Instalar |
 |---|---|---|
-| [Claude Code](https://claude.com/claude-code) | Orquestador | `claude --version` |
-| Node.js 22+ y Git | Scripts y hooks del plugin | `node -v` |
-| Python 3.12+ y [uv](https://docs.astral.sh/uv/) | El comando `cc` | `uv --version` |
-| [Windows Terminal](https://aka.ms/terminal) | Paneles de `cc` | `wt -?` |
-| [Backlog.md](https://github.com/MrLesk/Backlog.md) | Tarjetas | `npm i -g backlog.md` |
-| [Obsidian](https://obsidian.md) *(opcional)* | Memoria del proyecto | |
-| `nlm` *(opcional)* | NotebookLM | `uv tool install notebooklm-mcp-cli` |
+| [Obsidian](https://obsidian.md) | Ver y editar la memoria del proyecto (en el tablero, `o` abre la nota). Abre en Obsidian la carpeta del vault (`vaultPath`) | `winget install Obsidian.Obsidian` |
+| Plugin *Local REST API* de Obsidian | Solo para que `doctor` compruebe Obsidian: actívalo y guarda su clave en la variable de entorno `HQ_OBSIDIAN_KEY` | desde Obsidian → Plugins de la comunidad |
+| `nlm` (NotebookLM) | Consultar documentos largos sin gastar contexto (agente `investigador`) | `uv tool install notebooklm-mcp-cli`, y luego `nlm login --profile hq` (mejor con una cuenta de Google secundaria) |
 
 ### 2. Instalar
+En PowerShell:
 ```powershell
 git clone https://github.com/alikoubiiss/CC-more-of-claude.git
 cd CC-more-of-claude
-npm test                                   # opcional: debe salir todo en verde
+npm test                                   # opcional: todo debe salir en verde
 node scripts/setup.mjs                     # crea tu config en %USERPROFILE%\.project-hq\config.json
 uv tool install --editable .\tui           # instala el comando `cc`
 claude plugin marketplace add "$PWD"
 claude plugin install project-hq@project-hq-local
-node scripts/doctor.mjs                    # comprueba backlog, nlm, rutas...
+node scripts/doctor.mjs                    # comprueba que todo está listo
 ```
-`setup.mjs` acepta `--vault <ruta>`, `--proyectos <ruta>`, `--perfil-nlm <nombre>` y `--puerto <n>`. Si usas
-NotebookLM: `nlm login --profile hq` (mejor con una cuenta de Google secundaria).
+`setup.mjs` acepta `--vault <ruta>`, `--proyectos <ruta>`, `--perfil-nlm <nombre>` y `--puerto <n>`.
+Si `cc` no se reconoce, cierra y abre la terminal (uv lo deja en `%USERPROFILE%\.local\bin`; `uv tool update-shell` lo añade al PATH).
 
-### 3. Usarlo
-```powershell
-cd <la-carpeta-de-tu-proyecto>
-cc start        # abre Claude Code, el tablero, el feed y las notas del proyecto
-```
-Dentro de Claude Code: `/project-hq:nuevo-proyecto <nombre>` crea el repo, el tablero, la nota en el vault y el
-cuaderno; después `/idea` → `/planificar` → `/ejecutar` → `/revisar`.
+`doctor` marca `✓` (bien), `✗` (hay que arreglarlo) y `!` (pieza opcional que falta: `nlm`, su login, `cc` o `wt`).
+Solo los `✗` impiden usar HQ.
+
+### 3. Tu primer proyecto
+1. Abre Claude Code en cualquier carpeta y ejecuta `/project-hq:nuevo-proyecto mi-proyecto`. Crea el repo en
+   `projectsRoot`, el tablero, la nota en el vault y, si tienes `nlm`, el cuaderno, y lo registra en HQ.
+2. En una terminal: `cd <projectsRoot>\mi-proyecto` y `cc start`. Abre Claude Code, el tablero, el feed y las notas.
+   (`cc start` solo reconoce proyectos creados con `/nuevo-proyecto`; fuera de uno muestra la lista.)
+3. Dentro de Claude Code: `/idea` → `/planificar` → `/ejecutar siguiente` → `/revisar`. En el tablero apruebas con `a`.
 
 ### 4. Qué es tuyo y no se sube a GitHub
 Todo lo personal queda fuera del repo (`.gitignore`). Esto es lo que tienes que poner tú:

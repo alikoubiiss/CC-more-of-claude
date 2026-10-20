@@ -96,3 +96,14 @@ test('presupuesto y métricas: informativos, nunca fallan', () => {
   assert.match(res.find((x) => x.name === 'presupuesto').detail, /sin presupuesto/);
   assert.equal(res.find((x) => x.name === 'presupuesto').ok, true);
 });
+
+test('nlm, su login, cc y wt son opcionales: fallan como aviso sin romper el doctor', () => {
+  const cfg = makeCfg(tmpDir());
+  mkdirSync(cfg.vaultPath, { recursive: true });
+  mkdirSync(cfg.projectsRoot, { recursive: true });
+  const run = (cmd) => (['nlm', 'cc', 'where.exe'].includes(cmd) ? { status: 1, stdout: '', stderr: 'no' } : ok());
+  const res = runChecks(cfg, run);
+  const falla = res.filter((r) => !r.ok);
+  assert.ok(falla.length >= 3 && falla.every((r) => r.opcional), JSON.stringify(falla));
+  assert.equal(res.find((r) => r.name === 'git').opcional, false);
+});

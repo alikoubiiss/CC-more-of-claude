@@ -30,8 +30,11 @@ try {
   } else {
     results.push({ name: 'Obsidian REST API (opcional)', ok: true, detail: 'HQ_OBSIDIAN_KEY no definida; se omite' });
   }
-  for (const r of results) console.log(`${r.ok ? '✓' : '✗'} ${r.name}${r.detail ? ' — ' + r.detail : ''}`);
-  process.exit(results.every((r) => r.ok) ? 0 : 1);
+  for (const r of results) console.log(`${r.ok ? '✓' : r.opcional ? '!' : '✗'} ${r.name}${r.detail ? ' — ' + r.detail : ''}`);
+  const avisos = results.filter((r) => !r.ok && r.opcional).length;
+  if (avisos) console.log(`
+${avisos} aviso(s) con !: piezas opcionales que no se usarán hasta instalarlas (ver README).`);
+  process.exit(results.every((r) => r.ok || r.opcional) ? 0 : 1);
 } catch (e) {
   console.error(`Error: ${e.message}`);
   process.exit(1);
