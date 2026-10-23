@@ -4,9 +4,9 @@ Fecha: 2026-10-09 · Estado: pendiente de visto bueno del usuario · Depende de:
 
 ## 1. Objetivo y alcance
 
-Ali tiene un vault Personal en OneDrive (`%USERPROFILE%\OneDrive\Bovedas\Personal`): 89 notas, de las que 67 son chats de Claude exportados (~1 MB, con ruido como «This block is not supported on your current device yet.»), 14 notas de «Temas», 2 proyectos personales, 1 nota de contexto, 6 Bases y 3 plantillas; las carpetas Entrada, Diario, Notas, Salud y Archivo están vacías.
+el usuario tiene un vault Personal en una carpeta sincronizada (`%USERPROFILE%\la nube sincronizada\Bovedas\Personal`): 89 notas, de las que 67 son chats de Claude exportados (~1 MB, con ruido como «This block is not supported on your current device yet.»), 14 notas de «Temas», 2 proyectos personales, 1 nota de contexto, 6 Bases y 3 plantillas; las carpetas Entrada, Diario, Notas, Salud y Archivo están vacías.
 
-Se construye un vault nuevo, **`C:\Bovedas\Personal`** (fuera de OneDrive), con una estructura mejor y **todo** el contenido útil migrado, y se prepara conocimiento reutilizable para HQ. Dos fases:
+Se construye un vault nuevo, **`<vault-personal>`** (fuera de la nube sincronizada), con una estructura mejor y **todo** el contenido útil migrado, y se prepara conocimiento reutilizable para HQ. Dos fases:
 
 - **Fase 1 (determinista, sin tokens):** copia de seguridad, migración, limpieza, reescritura de enlaces y Bases, verificación.
 - **Fase 2 (con modelo, por lotes y con visto bueno):** destilar la Wiki (temas, decisiones, recetas) y exportar a `ProjectHQ\Conocimiento\` solo lo marcado `compartir: hq`, con redacción automática de datos personales.
@@ -35,14 +35,14 @@ Reglas: `Fuentes/` es solo lectura (se enlaza, no se edita). `Wiki/` es lo que C
 
 ## 3. Fase 1: migración (script `scripts/vault-migrar.mjs`)
 
-1. **Copia de seguridad:** copia completa del vault viejo a `C:\proyectos personales\project-hq\backups\vault-personal-<fecha>\` con hash SHA-256 por fichero; si la copia no coincide, se detiene.
-2. **Solo lectura del original:** nunca escribe ni borra en el vault viejo. Crea `C:\Bovedas\Personal` desde cero; se niega a ejecutar si existe con contenido salvo `--forzar-existente`. Escribe únicamente en `C:\Bovedas\Personal`, `ProjectHQ\Conocimiento\` y `backups\`; rechaza rutas con `..` o fuera de esas tres y no sigue enlaces simbólicos.
+1. **Copia de seguridad:** copia completa del vault viejo a `<repo-project-hq>\backups\vault-personal-<fecha>\` con hash SHA-256 por fichero; si la copia no coincide, se detiene.
+2. **Solo lectura del original:** nunca escribe ni borra en el vault viejo. Crea `<vault-personal>` desde cero; se niega a ejecutar si existe con contenido salvo `--forzar-existente`. Escribe únicamente en `<vault-personal>`, `ProjectHQ\Conocimiento\` y `backups\`; rechaza rutas con `..` o fuera de esas tres y no sigue enlaces simbólicos.
 3. **Chats:** quita los bloques de ruido conocidos y normaliza saltos de línea; el texto de la conversación se conserva. Frontmatter unificado: se conservan `tipo: chat-claude`, `categoria`, `fecha`, `mensajes` y `uuid` (las Bases filtran por estas propiedades) y se añaden `titulo`, `etiquetas` (con la categoría) y `compartir: privado`. Nombre `AAAA-MM-DD <titulo>.md` en `Fuentes/Chats/AAAA/`; los nombres se sanean para Windows (`: ? " < > | * \ /`); duplicados se conservan con sufijo ` (2)`.
 4. **Resto de notas:** «Contexto guardado por Claude» → `Fuentes/Recursos/` (`compartir: privado`); las 14 notas de Temas → `Wiki/Temas/` como `estado: borrador`; los 2 proyectos → `Proyectos/`; plantillas → `Plantillas/`; Bases → `Paneles/`; solo se reescriben los argumentos de `file.inFolder(...)` porque el resto de sus filtros usa propiedades.
 5. **Enlaces:** todos los `[[…]]` de las notas migradas se reescriben al nombre nuevo.
 6. **Informe y mapa:** `_migracion/mapa.json` (viejo → nuevo + hash) e `informe.md`. Los fallos por fichero (frontmatter roto, nombre inválido) se anotan y no detienen el resto; nunca se pierde un chat en silencio.
 7. **Verificación:** 89 notas de origen presentes en destino, cero enlaces rotos, texto de cada chat igual salvo el ruido quitado. Si algo no cuadra, el informe lo dice y la migración no se marca completa.
-8. **Idempotente** y con `--dry-run` que muestra qué haría sin escribir. Deshacer = borrar `C:\Bovedas\Personal`. Al terminar y verificar, el informe indica que el vault viejo ya no hace falta; la copia de seguridad se queda hasta que el usuario la borre.
+8. **Idempotente** y con `--dry-run` que muestra qué haría sin escribir. Deshacer = borrar `<vault-personal>`. Al terminar y verificar, el informe indica que el vault viejo ya no hace falta; la copia de seguridad se queda hasta que el usuario la borre.
 
 ## 4. Fase 2: destilado y exportación a HQ
 

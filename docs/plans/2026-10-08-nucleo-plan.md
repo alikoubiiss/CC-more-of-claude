@@ -13,8 +13,8 @@
 ## Global Constraints
 
 - Windows 11, Node 22.23, Python 3.12. Sin dependencias npm (solo módulos `node:`). Tests con `node --test`.
-- Vault de HQ: `C:\Bovedas\ProjectHQ` (fuera de OneDrive); `vaultProjectsDir` = `Proyectos`. Repos de proyecto en `C:\proyectos personales\<slug>`.
-- **Nada de HQ en OneDrive.** Al vault solo notas `.md` pequeñas; copias `.bak` en `project-hq\backups\`.
+- Vault de HQ: `<vaultPath>` (fuera de la nube sincronizada); `vaultProjectsDir` = `Proyectos`. Repos de proyecto en `<projectsRoot>\<slug>`.
+- **Nada de HQ en la nube sincronizada.** Al vault solo notas `.md` pequeñas; copias `.bak` en `project-hq\backups\`.
 - `CLAUDE.md` de proyecto ≤ 25 líneas. SessionStart inyecta ≤ 1200 caracteres (~300 tokens).
 - Cada subagente lleva `model:` explícito: arquitecto=opus, ejecutor=sonnet, revisor=sonnet, explorador=haiku, investigador=sonnet, skill-scout=haiku.
 - Cerrar el contrato de nombres: el *slug* (minúsculas, sin acentos, `a-z0-9-`, ≤ 40) es el nombre de carpeta, de nota en el vault y del cuaderno. El nombre original solo se guarda como `display`.
@@ -29,7 +29,7 @@
 Entradas y condiciones que el spec implica pero que no son el camino feliz (cada una tiene su test en la tarea indicada):
 
 1. Nombres con acentos, espacios, mayúsculas, `..` o nombres reservados de Windows (`CON`, `NUL`, `COM1`…) → slug seguro o error claro (Task 2).
-2. Rutas con espacios (`C:\proyectos personales`) y argumentos con espacios al llamar a `backlog`/`nlm` desde Windows (Task 5).
+2. Rutas con espacios (`<projectsRoot>`) y argumentos con espacios al llamar a `backlog`/`nlm` desde Windows (Task 5).
 3. Volver a ejecutar `/nuevo-proyecto` sobre un proyecto existente: no pisa `CLAUDE.md` editado, no recrea cuaderno ni backlog, no duplica la tarjeta "Conectar NotebookLM", mismo puerto (Task 6).
 4. Hooks fuera de un proyecto, en una subcarpeta del proyecto, con `registry.json` dañado o con tarjetas con saltos de línea CRLF: silenciosos, `exit 0`, salida ≤ 1200 caracteres (Tasks 7 y 8).
 5. `registry.json` corrupto: error claro, copia `.corrupt-*`, nunca se sobrescribe ni se pierde (Task 3). Y un `rel` con `..` en el vault nunca escribe fuera de la carpeta del proyecto (Task 4).
@@ -89,7 +89,7 @@ registry.json
 ```json
 {
   "vaultPath": "C:\\Bovedas\\ProjectHQ",
-  "projectsRoot": "C:\\proyectos personales",
+  "projectsRoot": "<projectsRoot>",
   "vaultProjectsDir": "Proyectos",
   "nlmProfile": "hq",
   "basePort": 6430,
@@ -102,7 +102,7 @@ registry.json
   "name": "project-hq",
   "description": "Project HQ: proyectos con tablero Backlog.md, memoria en Obsidian y NotebookLM, y orquestación Opus/Sonnet/Haiku",
   "version": "0.1.0",
-  "author": { "name": "Ali" }
+  "author": { "name": "el usuario" }
 }
 ```
 
@@ -209,7 +209,7 @@ test('loadConfig falla si el fichero no existe', () => {
 
 - [ ] **Step 4: Ejecutar y ver que falla**
 
-Run: `cd "C:\proyectos personales\project-hq" && node --test tests/config.test.mjs`
+Run: `cd "<repo-project-hq>" && node --test tests/config.test.mjs`
 Expected: FAIL (`Cannot find module '../lib/config.mjs'`).
 
 - [ ] **Step 5: Implementar `lib/config.mjs`, `lib/log.mjs`, `lib/dates.mjs`**
@@ -277,7 +277,7 @@ Expected: 4 tests PASS.
 - [ ] **Step 7: Commit**
 
 ```bash
-cd "C:/proyectos personales/project-hq"
+cd "<repo-project-hq>"
 git add -A
 git commit -m "feat: esqueleto, config y helpers de test" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
@@ -426,13 +426,13 @@ test('upsertProject reemplaza por slug sin duplicar y conserva el puerto', () =>
 
 test('findByPath encuentra el proyecto desde subcarpetas, sin confundir prefijos', () => {
   const reg = { projects: [
-    { slug: 'demo', path: 'C:\\proyectos personales\\demo' },
-    { slug: 'demo-2', path: 'C:\\proyectos personales\\demo-2' },
+    { slug: 'demo', path: '<projectsRoot>\\demo' },
+    { slug: 'demo-2', path: '<projectsRoot>\\demo-2' },
   ] };
-  assert.equal(findByPath(reg, 'C:\\proyectos personales\\demo').slug, 'demo');
+  assert.equal(findByPath(reg, '<projectsRoot>\\demo').slug, 'demo');
   assert.equal(findByPath(reg, 'c:\\PROYECTOS PERSONALES\\demo\\src\\x').slug, 'demo');
-  assert.equal(findByPath(reg, 'C:\\proyectos personales\\demo-2\\src').slug, 'demo-2');
-  assert.equal(findByPath(reg, 'C:\\proyectos personales\\otro'), null);
+  assert.equal(findByPath(reg, '<projectsRoot>\\demo-2\\src').slug, 'demo-2');
+  assert.equal(findByPath(reg, '<projectsRoot>\\otro'), null);
   assert.equal(findByPath(reg, ''), null);
 });
 ```
@@ -629,10 +629,10 @@ test('createProjectIndex crea la nota con frontmatter y no pisa ediciones del us
   const a = createProjectIndex(cfg, project);
   assert.equal(a.written, true);
   assert.match(readFileSync(a.path, 'utf8'), /proyecto: demo/);
-  writeFileSync(a.path, 'editado por Ali');
+  writeFileSync(a.path, 'editado por el usuario');
   const b = createProjectIndex(cfg, project);
   assert.equal(b.written, false);
-  assert.equal(readFileSync(a.path, 'utf8'), 'editado por Ali');
+  assert.equal(readFileSync(a.path, 'utf8'), 'editado por el usuario');
 });
 
 test('writeNote nunca escribe fuera de la carpeta del proyecto', () => {
@@ -2090,7 +2090,7 @@ Si hay "Última sesión", lee solo ese fichero. Lee el Índice solo si falta con
 ```json
 {
   "name": "project-hq-local",
-  "owner": { "name": "Ali" },
+  "owner": { "name": "el usuario" },
   "plugins": [
     { "name": "project-hq", "source": "./", "description": "Project HQ: proyectos con Backlog.md, Obsidian y NotebookLM" }
   ]
@@ -2256,11 +2256,11 @@ git commit -m "feat: doctor de diagnostico" -m "Co-Authored-By: Claude Sonnet 5.
 
 - [ ] **Step 7: Instalar el plugin `project-hq`** (pide permiso). Comandos:
 ```
-claude plugin marketplace add "C:\proyectos personales\project-hq"
-claude plugin install project-hq@project-hq-local
+claude plugin marketplace add "<repo-project-hq>"
+claude plugin install project-hq@project-hq
 claude plugin list
 ```
-Expected: `project-hq` aparece como instalado y habilitado. Si algún subcomando no existe en esta versión de Claude Code, usa `claude --help` / `claude plugin --help` y adapta; como alternativa temporal, probar con `claude --plugin-dir "C:\proyectos personales\project-hq"`. Los comandos quedan como `/project-hq:nuevo-proyecto` (el prefijo puede omitirse si no hay conflicto).
+Expected: `project-hq` aparece como instalado y habilitado. Si algún subcomando no existe en esta versión de Claude Code, usa `claude --help` / `claude plugin --help` y adapta; como alternativa temporal, probar con `claude --plugin-dir "<repo-project-hq>"`. Los comandos quedan como `/project-hq:nuevo-proyecto` (el prefijo puede omitirse si no hay conflicto).
 
 - [ ] **Step 8 (OPCIONAL, por defecto NO hacer): registrar el MCP de Backlog.** Solo si el usuario lo pide: `claude mcp add backlog --scope user -- backlog mcp start`. Coste: el esquema de herramientas se carga en cada sesión.
 
@@ -2272,7 +2272,7 @@ Expected: `project-hq` aparece como instalado y habilitado. Si algún subcomando
 
 **Files:**
 - Create: `README.md`
-- (El proyecto de prueba `demo-hq` se crea fuera del repo, en `C:\proyectos personales\demo-hq`.)
+- (El proyecto de prueba `demo-hq` se crea fuera del repo, en `<projectsRoot>\demo-hq`.)
 
 - [ ] **Step 1: Crear el proyecto de prueba con el script real.**
 
@@ -2282,23 +2282,23 @@ Si `backlog init` rechaza un flag: ejecuta `backlog init --help`, corrige **solo
 
 - [ ] **Step 2: Verificar con los ojos y con comandos.**
 ```
-dir "C:\proyectos personales\demo-hq"
-type "C:\proyectos personales\demo-hq\.hq\project.json"
-type "C:\Bovedas\ProjectHQ\Proyectos\demo-hq\Índice.md"
+dir "<projectsRoot>\demo-hq"
+type "<projectsRoot>\demo-hq\.hq\project.json"
+type "<vaultPath>\Proyectos\demo-hq\Índice.md"
 backlog board   (desde la carpeta demo-hq: debe mostrar las 5 columnas Ideas…Hecho)
 ```
 Expected: carpeta con `backlog/`, `docs/`, `CLAUDE.md` (≤ 25 líneas), `.hq/`; nota en el vault; kanban con 5 columnas. Si `backlog board` muestra columnas distintas (la clave `statuses` en `config.yml` no es la que Backlog.md lee), corrige `setStatuses` según el `config.yml` real generado por `backlog init` y actualiza su test.
 
 - [ ] **Step 3: Probar la memoria entre sesiones.** Crea una tarjeta y una decisión de prueba:
 ```
-cd "C:\proyectos personales\demo-hq"
+cd "<projectsRoot>\demo-hq"
 backlog task create "Tarjeta de prueba" -d "probar HQ"
 backlog task edit 1 -s "En curso"
-echo {"title":"Usar SQLite","context":"prueba","decision":"SQLite","why":"simple"} | node "C:\proyectos personales\project-hq\scripts\vault-cli.mjs" decision
+echo {"title":"Usar SQLite","context":"prueba","decision":"SQLite","why":"simple"} | node "<repo-project-hq>\scripts\vault-cli.mjs" decision
 ```
 (En PowerShell usa comillas simples alrededor del JSON.) Abre una sesión NUEVA de Claude Code dentro de `demo-hq`. Expected: al arrancar aparece el contexto `[Project HQ] demo-hq…` con la tarjeta activa y la decisión, sin que escribas nada. Ejecuta `/retomar` y comprueba que resume lo mismo.
 
-- [ ] **Step 4: Probar guardado automático.** En esa sesión haz un cambio trivial y termina el turno. Expected: aparece `C:\Bovedas\ProjectHQ\Proyectos\demo-hq\Sesiones\<fecha>-<id>.md`; un segundo turno dentro de 10 min no crea otro fichero.
+- [ ] **Step 4: Probar guardado automático.** En esa sesión haz un cambio trivial y termina el turno. Expected: aparece `<vaultPath>\Proyectos\demo-hq\Sesiones\<fecha>-<id>.md`; un segundo turno dentro de 10 min no crea otro fichero.
 
 - [ ] **Step 5: Probar la degradación.** Con `nlm` sin login válido (`nlm login --profile hq` caducado o perfil inexistente), `node scripts/new-project.mjs demo-fallo`. Expected: ✗ en notebooklm, el resto ✓, y una tarjeta "Conectar NotebookLM" en el backlog. Borra después `demo-fallo` (carpeta, nota del vault y su entrada en `registry.json`) **tras confirmarlo con el usuario**.
 
@@ -2316,7 +2316,7 @@ git commit -m "docs: README y prueba end-to-end del Nucleo" -m "Co-Authored-By: 
 
 ## Self-review (hecho al escribir el plan)
 
-**Cobertura del spec:** §4 estructura → Tasks 1-4, 10; §5 comandos → Tasks 6, 9, 10 (`/nuevo-proyecto` con script, `/idea /planificar /ejecutar /revisar` como comandos+agentes, `/guardar` y `/retomar` con scripts); §6 subagentes con `model:` → Task 10 (+ test que lo exige); `disenador-ui` queda para el subsistema 3 como indica el spec; §7 hooks → Tasks 7-8 (SessionStart ≤ 1200 caracteres, PreCompact y Stop con debounce); §9 errores/seguridad → degradación NLM (Task 6), `doctor` (Task 11), guardas del vault y `.bak` en `backups/` (Task 4), variable de entorno para la clave (Task 12), instalaciones con aprobación (Task 12), sin OneDrive (restricción global); §10 pruebas → tests por tarea + e2e (Task 13). Los criterios de éxito "interfaz abierta en < 1 min" y "retomar sin re-explicar" se comprueban en Task 13 (pasos 1 y 3); el tercero ("saber qué pasa mirando el tablero") lo cubre `backlog browser` hasta el subsistema 3.
+**Cobertura del spec:** §4 estructura → Tasks 1-4, 10; §5 comandos → Tasks 6, 9, 10 (`/nuevo-proyecto` con script, `/idea /planificar /ejecutar /revisar` como comandos+agentes, `/guardar` y `/retomar` con scripts); §6 subagentes con `model:` → Task 10 (+ test que lo exige); `disenador-ui` queda para el subsistema 3 como indica el spec; §7 hooks → Tasks 7-8 (SessionStart ≤ 1200 caracteres, PreCompact y Stop con debounce); §9 errores/seguridad → degradación NLM (Task 6), `doctor` (Task 11), guardas del vault y `.bak` en `backups/` (Task 4), variable de entorno para la clave (Task 12), instalaciones con aprobación (Task 12), sin la nube sincronizada (restricción global); §10 pruebas → tests por tarea + e2e (Task 13). Los criterios de éxito "interfaz abierta en < 1 min" y "retomar sin re-explicar" se comprueban en Task 13 (pasos 1 y 3); el tercero ("saber qué pasa mirando el tablero") lo cubre `backlog browser` hasta el subsistema 3.
 
 **Placeholders:** ninguno; los pasos que dependen de la salida real de `backlog`/`nlm` tienen una instrucción concreta de ajuste local (`backlogInit`, `setStatuses`, `extractNotebookId`), todos aislados en `lib/tools.mjs`.
 

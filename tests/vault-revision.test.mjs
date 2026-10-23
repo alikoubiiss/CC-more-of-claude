@@ -107,11 +107,11 @@ test('H8 --forzar-existente: lo que el usuario editó en el destino se guarda en
   const f = fixture();
   ejecutar(base(f));
   const rel = path.join(f.d, 'Wiki', 'Temas', 'Salud.md');
-  writeFileSync(rel, '---\nestado: revisada\n---\nEDITADO por Ali\n');
+  writeFileSync(rel, '---\nestado: revisada\n---\nEDITADO por el usuario\n');
   ejecutar(base(f, { forzarExistente: true }));
   const baks = readdirSync(path.join(f.d, 'Wiki', 'Temas')).filter((n) => /^Salud\.md\.bak/.test(n));
   assert.equal(baks.length, 1);
-  assert.match(readFileSync(path.join(f.d, 'Wiki', 'Temas', baks[0]), 'utf8'), /EDITADO por Ali/);
+  assert.match(readFileSync(path.join(f.d, 'Wiki', 'Temas', baks[0]), 'utf8'), /EDITADO por el usuario/);
 });
 
 test('S1 redactor: un IBAN con el checksum roto (typo) se redacta entero, como antes', () => {

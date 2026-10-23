@@ -1,16 +1,16 @@
 # Project HQ — Subsistema 3: HQ en la terminal (spec de diseño)
 
-Fecha: 2026-10-08 · Autor: Ali + Claude · Estado: pendiente de revisión
+Fecha: 2026-10-08 · Autor: el autor + Claude · Estado: pendiente de revisión
 Sustituye al "Dashboard en vivo" web del spec del Núcleo (§ subsistema 3). Los mockups web (`docs/mockups/`) se conservan como referencia visual.
 
 ## 1. Contexto y objetivo
 
-Ali quiere **trabajar todo en la terminal**: Claude Code, el tablero de tarjetas, el feed de lo que hace el agente y las notas de Obsidian, en paneles de una misma ventana (idea tomada de GoRex, un emulador con paneles). Las tarjetas se actualizan solas y **Ali decide cuándo se da por buena una tarjeta o una fase**; nada avanza solo.
+el usuario quiere **trabajar todo en la terminal**: Claude Code, el tablero de tarjetas, el feed de lo que hace el agente y las notas de Obsidian, en paneles de una misma ventana (idea tomada de GoRex, un emulador con paneles). Las tarjetas se actualizan solas y **el usuario decide cuándo se da por buena una tarjeta o una fase**; nada avanza solo.
 
 ### Criterios de éxito
 - `hq open <proyecto>` abre en menos de 5 s una pestaña de Windows Terminal con Claude Code, tablero y feed ya repartidos.
 - El estado del proyecto se entiende de un vistazo en el tablero, sin leer el historial de Claude.
-- Ninguna tarjeta pasa a «Hecho» ni ninguna fase se da por cerrada sin una acción explícita de Ali.
+- Ninguna tarjeta pasa a «Hecho» ni ninguna fase se da por cerrada sin una acción explícita del usuario.
 - Los paneles no añaden latencia perceptible a Claude Code ni tokens al contexto.
 
 ### Fuera de alcance
@@ -47,7 +47,7 @@ project-hq/
 <dataDir>/state/<session8>.json                modelo, coste y contexto por sesión (nuevo)
 <proyecto>/.hq/fases.json                      fases y aprobaciones (nuevo)
 ```
-`dataDir` ya existe en `config.json` (fuera de OneDrive). `hq` localiza la configuración con `HQ_CONFIG` o, por defecto, `C:\proyectos personales\project-hq\config.json`.
+`dataDir` ya existe en `config.json` (fuera de la nube sincronizada). `hq` localiza la configuración con `HQ_CONFIG` o, por defecto, `<repo-project-hq>\config.json`.
 
 ## 4. Contratos de datos
 
@@ -133,7 +133,7 @@ Disposición: Claude Code a la izquierda (58 %), tablero y feed a la derecha, no
 
 ## 9. Errores, privacidad y seguridad
 - Hook y statusline nunca bloquean ni rompen la sesión; errores a `logs/hooks.log`.
-- Sin red ni puertos. Todo en `dataDir` y en los repos, fuera de OneDrive.
+- Sin red ni puertos. Todo en `dataDir` y en los repos, fuera de la nube sincronizada.
 - Privacidad de eventos: solo resúmenes cortos y redactados (§4.1).
 - Si falta un fichero o está corrupto, el panel lo indica en pantalla sin cerrarse (nunca un traceback).
 - Instalaciones que requieren tu visto bueno: `uv tool install --editable ./tui` (Textual y dependencias) y la entrada `statusLine` en `~/.claude/settings.json`.

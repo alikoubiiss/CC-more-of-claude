@@ -249,7 +249,7 @@ class TestDetalle(unittest.TestCase):
         from hq.screens.board import render_detalle
         t = Tarea("TASK-2", "En curso", "Pagos \x1b[31m‮" + "x" * 300, ["modelo:opus", "skill:tdd", "backend", "revisada"],
                   ["TASK-1", "TASK-3", "TASK-99"], [(i, f"criterio {i}", i % 2 == 0) for i in range(1, 10)],
-                  [("ali", "2026-10-10", "comentario [b]sin markup[/b]")], "descripción " * 80)
+                  [("autor", "2026-10-10", "comentario [b]sin markup[/b]")], "descripción " * 80)
         otras = [t, Tarea("TASK-1", "Hecho", "base"), Tarea("TASK-3", "Verificando", "otra")]
         return render_detalle(t, otras, ancho)
 

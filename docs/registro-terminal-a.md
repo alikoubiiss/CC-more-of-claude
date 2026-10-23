@@ -61,7 +61,7 @@ Task 6: fix round 2/5 dispatched (base 6a9487b)
 Task 6: fix round 2/5 implemented (commits 6a9487b..842b292), awaiting scoped re-review
 Task 6: fix round 2/5 (todo abierto resuelto; ReDoS lineal medido <3 ms; commits 6a9487b..842b292)
 Task 6: complete (commits 94a3dc8..842b292, review clean after 2 fix rounds)
-- Nota: avisos automaticos de seguridad sobre lib/events.mjs reconocidos; tratados en 2 rondas (redactor ampliado, tope 400, tiempo lineal, rutas fuera del proyecto recortadas). Riesgo residual: la redaccion por patrones nunca es total; eventos locales (dataDir fuera de OneDrive) y purgados a 7 dias. Mencionarlo en el informe final.
+- Nota: avisos automaticos de seguridad sobre lib/events.mjs reconocidos; tratados en 2 rondas (redactor ampliado, tope 400, tiempo lineal, rutas fuera del proyecto recortadas). Riesgo residual: la redaccion por patrones nunca es total; eventos locales (dataDir fuera de la nube sincronizada) y purgados a 7 dias. Mencionarlo en el informe final.
 - Plan ampliado: Task 11 (hook de puerta) commiteada en el plan (0c915e5). Orden: 7, 11, 8, 9, 10.
 Task 7: dispatching (base 842b292)
 Task 7: implemented (commits 0c915e5..c1c33c6; helper allMd renombrado a allMdDisk por colision), awaiting review

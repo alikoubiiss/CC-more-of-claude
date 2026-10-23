@@ -4,7 +4,21 @@ Plugin de **Claude Code** (más el comando `cc`) y plantilla de proyecto para tr
 persistente en una bóveda de Obsidian y un cuaderno de NotebookLM para los documentos largos. Los ficheros llevan
 marcadores `<ASÍ>` que sustituyes por tus propias rutas e ids.
 
-![Tablero de ejemplo](docs/tablero.png)
+[![Licencia MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
+[![Tests](https://github.com/alikoubiiss/CC-more-of-claude/actions/workflows/ci.yml/badge.svg)](https://github.com/alikoubiiss/CC-more-of-claude/actions/workflows/ci.yml)
+
+![Tablero de ejemplo](docs/capturas/tablero.svg)
+
+<details><summary>Más capturas (datos de ejemplo)</summary>
+
+| Foco: siguiente acción, sesión y fase | Estadísticas: gasto y progreso |
+|---|---|
+| ![Foco](docs/capturas/foco.svg) | ![Estadísticas](docs/capturas/estadisticas.svg) |
+
+![Lista de proyectos](docs/capturas/proyectos.svg)
+
+Se regeneran con `cd tui && python tools/capturas.py` (usa un HQ ficticio en una carpeta temporal).
+</details>
 
 ## Instalación (Windows 11)
 
@@ -40,8 +54,8 @@ cd CC-more-of-claude
 npm test                                   # opcional: todo debe salir en verde
 node scripts/setup.mjs                     # crea tu config en %USERPROFILE%\.project-hq\config.json
 uv tool install --editable .\tui           # instala el comando `cc`
-claude plugin marketplace add "$PWD"
-claude plugin install project-hq@project-hq-local
+claude plugin marketplace add "$PWD"       # o, sin clonar: claude plugin marketplace add alikoubiiss/CC-more-of-claude
+claude plugin install project-hq@project-hq
 node scripts/doctor.mjs                    # comprueba que todo está listo
 ```
 `setup.mjs` acepta `--vault <ruta>`, `--proyectos <ruta>`, `--perfil-nlm <nombre>` y `--puerto <n>`.
@@ -73,7 +87,7 @@ La config se busca en este orden: variable `HQ_CONFIG`, `%USERPROFILE%\.project-
 un `config.json` junto al código. Nunca subas ese fichero, tus ids de cuaderno ni tu clave de Obsidian.
 
 ### 5. Actualizar
-`git pull` en tu clon y `claude plugin update project-hq@project-hq-local`. Tu config y tu estado no se tocan
+`git pull` en tu clon y `claude plugin update project-hq@project-hq`. Tu config y tu estado no se tocan
 porque viven en `%USERPROFILE%\.project-hq`.
 
 ## Qué hace
@@ -117,7 +131,7 @@ CLAUDE.md                  reglas del proyecto para Claude (con marcadores a rel
 .hq/fases.example.json     fases del proyecto y su aprobación (null = pendiente)
 backlog/                   tablero Backlog.md: config, hitos y tarjetas de ejemplo
 docs/ARQUITECTURA.md       arquitectura (la rellena /planificar)
-docs/tablero.png           captura del tablero `cc`
+docs/capturas/             capturas SVG del tablero `cc` (las genera tui/tools/capturas.py)
 ```
 
 ## Adaptarlo a tu caso
@@ -152,6 +166,19 @@ rutas nunca se suben).
 - **Fases**: `.hq/fases.example.json` (un `milestone` por fase, `aprobada: null` hasta que la apruebes).
 - **Tarjetas**: borra las de `backlog/tasks/` y `backlog/milestones/` (son ejemplos) y deja que `/planificar` cree las tuyas.
 - **Sin Obsidian o sin NotebookLM**: elimina las reglas correspondientes de `CLAUDE.md`; el flujo de tarjetas funciona igual.
+
+## Problemas frecuentes
+
+| Síntoma | Causa y solución |
+|---|---|
+| `cc` no se reconoce | Cierra y abre la terminal; si sigue, `uv tool update-shell`. |
+| `doctor` marca `✗ config` | Falta tu config: `node scripts/setup.mjs` (o define `HQ_CONFIG`). |
+| `cc start` abre la lista en vez del proyecto | La carpeta no está registrada: crea el proyecto con `/project-hq:nuevo-proyecto`. |
+| Cambié código y el plugin no lo recoge | Claude Code usa una copia en `~/.claude/plugins/cache/`: sube `version` en `.claude-plugin/plugin.json` o ejecuta `claude plugin update project-hq@project-hq`. |
+| Un paso de NotebookLM falla | Es opcional: comprueba `nlm login --profile <nlmProfile>` o quita la regla del `CLAUDE.md`. |
+
+## Contribuir y licencia
+Las contribuciones son bienvenidas: lee [CONTRIBUTING.md](CONTRIBUTING.md). Historial de versiones en [CHANGELOG.md](CHANGELOG.md). Licencia [MIT](LICENSE).
 
 # Referencia del plugin
 
@@ -199,7 +226,6 @@ Al crear cada tarjeta, el `arquitecto` le pone las etiquetas `modelo:<haiku|sonn
 | Funcionalidad corriente, tests, refactor mecánico acotado | sonnet / high | sonnet / high |
 | Docs, configuración, cambios triviales (1 fichero, 1-2 criterios) | haiku / medium | sonnet / medium |
 | Cambios pequeños con algo de lógica | sonnet / medium | sonnet / medium |
-| Cambios pequeños con algo de lógica | sonnet / medium | sonnet / medium |
 
 - **Rúbrica** (si faltan etiquetas, y como aviso del lint): +2 por seguridad o datos, concurrencia, >3 criterios, >5 ficheros, criterio ambiguo, ≥2 tarjetas dependientes. 0 y tarjeta mínima → haiku; 0 en el resto o 2-4 → sonnet/high; ≥6 → opus/high; `riesgo:alto` → opus/xhigh.
 - **Revisor:** nunca más débil que la tarjeta ni que el ejecutor tras escalar; `riesgo:alto` → opus/high. Sigue sin ver la implementación y solo tú mueves a «Hecho».
@@ -210,4 +236,4 @@ Al crear cada tarjeta, el `arquitecto` le pone las etiquetas `modelo:<haiku|sonn
 
 
 ## Tests
-`npm test` (hermético: carpetas temporales y runners simulados; no toca el vault real).
+`npm test` (hermético: carpetas temporales y runners simulados; no toca el vault real). Pantallas de `cc`: `cd tui && python -m unittest discover -s tests -t .` (con `uv pip install -e .`). Ambas suites corren en CI en cada push.

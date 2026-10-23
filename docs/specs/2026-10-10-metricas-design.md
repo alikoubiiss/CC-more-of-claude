@@ -4,7 +4,7 @@ Fecha: 2026-10-10 · Estado: aprobado de palabra por el usuario (leerá el spec 
 
 ## 1. Objetivo y alcance
 
-Ali quiere **controlar y reducir el gasto de tokens**. Decisiones tomadas en la conversación:
+el usuario quiere **controlar y reducir el gasto de tokens**. Decisiones tomadas en la conversación:
 - Solo **gasto real**, sin estimaciones de ahorro (no existe una ejecución «sin HQ» con la que comparar).
 - **Presupuesto con avisos, sin bloquear nada.**
 - **Gamificación ligera** (XP, niveles, racha, logros) como refuerzo.

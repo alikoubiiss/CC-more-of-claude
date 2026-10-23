@@ -82,10 +82,10 @@ test('escribirNotas: carpeta por tipo, frontmatter forzado y sin pisar existente
   const fm = parseFrontmatter(readFileSync(path.join(d, 'Wiki', 'Temas', 'Interés.md'), 'utf8')).datos;
   assert.deepEqual([fm.estado, fm.compartir, fm.lote, fm.tipo], ['borrador', 'privado', 'lote-finanzas-1', 'tema']);
   assert.deepEqual(fm.fuentes, ['[[2026-03-16 Interés compuesto]]']);
-  writeFileSync(path.join(d, 'Wiki', 'Temas', 'Interés.md'), 'EDITADO por Ali');
+  writeFileSync(path.join(d, 'Wiki', 'Temas', 'Interés.md'), 'EDITADO por el usuario');
   const otra = escribirNotas([n('tema', 'Interés')], { destino: d, guardia: g, loteId: 'lote-2', ahora: AHORA });
   assert.deepEqual(otra, ['Wiki/Temas/Interés (borrador).md']);
-  assert.equal(readFileSync(path.join(d, 'Wiki', 'Temas', 'Interés.md'), 'utf8'), 'EDITADO por Ali');
+  assert.equal(readFileSync(path.join(d, 'Wiki', 'Temas', 'Interés.md'), 'utf8'), 'EDITADO por el usuario');
 });
 
 test('ejecutarLote: usa run con el modelo pedido y no se cae si run falla', async () => {

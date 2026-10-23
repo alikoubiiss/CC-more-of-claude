@@ -12,10 +12,10 @@ test('createProjectIndex crea la nota con frontmatter y no pisa ediciones del us
   const a = createProjectIndex(cfg, project);
   assert.equal(a.written, true);
   assert.match(readFileSync(a.path, 'utf8'), /proyecto: demo/);
-  writeFileSync(a.path, 'editado por Ali');
+  writeFileSync(a.path, 'editado por el usuario');
   const b = createProjectIndex(cfg, project);
   assert.equal(b.written, false);
-  assert.equal(readFileSync(a.path, 'utf8'), 'editado por Ali');
+  assert.equal(readFileSync(a.path, 'utf8'), 'editado por el usuario');
 });
 
 test('writeNote nunca escribe fuera de la carpeta del proyecto', () => {

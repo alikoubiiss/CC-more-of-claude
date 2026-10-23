@@ -6,7 +6,7 @@ const R = '[redactado]';
 const tipos = (r) => Object.fromEntries(r.coincidencias.map((c) => [c.tipo, c.cantidad]));
 
 test('correo: simple y con +', () => {
-  const r = redactar('Escribe a ali.k+hq@correo.example.com o a otro@a.es.');
+  const r = redactar('Escribe a usuario.k+hq@correo.example.com o a otro@a.es.');
   assert.equal(r.texto, `Escribe a ${R} o a ${R}.`);
   assert.deepEqual(tipos(r), { correo: 2 });
 });
@@ -51,7 +51,7 @@ test('falsos positivos: fechas, versiones, números largos que no son tarjeta, h
 });
 
 test('términos de la lista: sin distinguir mayúsculas y mínimo 3 caracteres', () => {
-  const r = redactar('Trabajo en Farmhispania y en FARMHISPANIA SL; ok de Al.', { terminos: ['Farmhispania', 'Al'] });
+  const r = redactar('Trabajo en Acme y en ACME SL; ok de Al.', { terminos: ['Acme', 'Al'] });
   assert.equal(r.texto, `Trabajo en ${R} y en ${R} SL; ok de Al.`);
   assert.deepEqual(tipos(r), { termino: 2 });
 });

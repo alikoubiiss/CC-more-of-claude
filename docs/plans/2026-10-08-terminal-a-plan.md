@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Windows 11, Node 22.23, sin dependencias npm (solo módulos `node:`). Tests con `node --test`; suite actual: 121 tests en verde que **deben seguir en verde** salvo los cambios de expectativa que este plan indica.
-- Todo el estado fuera de OneDrive, en `dataDir` (`C:\proyectos personales\project-hq`): `events/`, `state/`, `logs/`, `registry.json`. Los datos por proyecto van en `<repo>/.hq/`.
+- Todo el estado fuera de la nube sincronizada, en `dataDir` (`<repo-project-hq>`): `events/`, `state/`, `logs/`, `registry.json`. Los datos por proyecto van en `<repo>/.hq/`.
 - **Privacidad de eventos:** nunca se guarda el texto de los prompts, respuestas de herramientas ni contenido de ficheros. Cadenas largas tipo clave se redactan. Cada campo de texto ≤ 80 caracteres.
 - **Un hook o la statusline nunca rompen la sesión:** siempre `exit 0` (usar `process.exitCode = 0`), errores a `logs/hooks.log` con `logError`. Los hooks nuevos van con `"async": true`.
 - **Puerta humana:** ningún prompt, comando ni agente del HQ puede mover una tarjeta a «Hecho» (`-s "Hecho"`) ni aprobar una fase. Solo el usuario (desde `hq`, Plan B, o con `node scripts/fases.mjs approve` a mano).
@@ -1127,10 +1127,10 @@ test('redact oculta claves, variables de entorno y cabeceras de autorización', 
   assert.equal(redact('lib/state.mjs'), 'lib/state.mjs');
 });
 
-const base = { session_id: 'abc12345-xyz', cwd: 'C:\\proyectos personales\\demo' };
+const base = { session_id: 'abc12345-xyz', cwd: '<projectsRoot>\\demo' };
 
 test('summarize: herramienta con ruta absoluta se vuelve relativa al proyecto', () => {
-  const e = summarize({ ...base, hook_event_name: 'PreToolUse', tool_name: 'Read', tool_input: { file_path: 'C:\\proyectos personales\\demo\\lib\\state.mjs' } },
+  const e = summarize({ ...base, hook_event_name: 'PreToolUse', tool_name: 'Read', tool_input: { file_path: '<projectsRoot>\\demo\\lib\\state.mjs' } },
     { now: new Date('2026-10-08T15:41:12.000Z'), mainModel: 'sonnet' });
   assert.deepEqual(e, { t: '2026-10-08T15:41:12.000Z', sid: 'abc12345', kind: 'tool', tool: 'Read', target: 'lib\\state.mjs', agent: null, model: 'sonnet' });
 });
@@ -1630,7 +1630,7 @@ import { HQ_ROOT } from '../lib/config.mjs';
 import { saveRegistry } from '../lib/registry.mjs';
 import { tmpDir, writeConfigFile } from './helpers.mjs';
 
-const REPO = 'C:\\proyectos personales\\demo-hq';
+const REPO = '<projectsRoot>\\demo-hq';
 
 test('buildWtArgs reparte Claude, tablero, feed y una pestaña de notas', () => {
   assert.deepEqual(buildWtArgs({ slug: 'demo-hq', repo: REPO }), [
@@ -1800,10 +1800,10 @@ git commit -m "chore: version 0.2.0 y README del HQ en la terminal" -m "Co-Autho
 
 > Antes de cada paso que cambie la máquina del usuario (actualizar el plugin, editar `~/.claude/settings.json`), pide visto bueno explícito y muestra el cambio exacto.
 
-- [ ] **Step 1: Actualizar el plugin instalado** (pide permiso): `claude plugin marketplace update project-hq-local` y `claude plugin update project-hq@project-hq-local` (si el subcomando difiere, usa `claude plugin --help`). Comprueba que `~/.claude/plugins/installed_plugins.json` apunta a `…\project-hq\0.2.0` y que `…\cache\project-hq-local\project-hq\0.2.0\hooks\event.mjs` existe.
-- [ ] **Step 2: Prueba de las fases con herramientas reales** en `demo-hq` (sin permisos especiales; son datos de prueba): desde `C:\proyectos personales\demo-hq` ejecuta `node "C:\proyectos personales\project-hq\scripts\fases.mjs" set` con el JSON `{"fases":["Diseño","Construcción"]}` por stdin y luego `status`. Esperado: no crea hitos (ya existen), `Diseño` queda `activa` (TASK-2 Hecho, TASK-3 en Verificando) y `Construcción` `pendiente`. Mueve TASK-3 a «Hecho» con `backlog task edit 3 -s "Hecho"`: `status` debe mostrar `Diseño` en `esperando`. Aprueba con `node -e "import('file:///C:/proyectos%20personales/project-hq/lib/fases.mjs').then(m=>m.approvePhase(process.cwd(),'f1','2026-10-09'))"` (el subcomando `approve` de la CLI exige terminal interactiva): `Construcción` pasa a `activa`.
-- [ ] **Step 3: Comprobar el contexto de arranque** ejecutando `node hooks\session-start.mjs` con `{"cwd":"C:\\proyectos personales\\demo-hq"}` por stdin (con `HQ_CONFIG` por defecto): debe incluir la línea de fase y «Esperando tu visto bueno» cuando corresponda.
-- [ ] **Step 4: Activar la statusline** (pide permiso; es configuración de usuario): añade a `~/.claude/settings.json`, conservando todo lo existente, `"statusLine": {"type": "command", "command": "node \"C:\\proyectos personales\\project-hq\\scripts\\statusline.mjs\""}`. Pide al usuario abrir una sesión **nueva** de Claude Code en `demo-hq` (y aceptar la confianza del espacio de trabajo si la pide): debe verse `demo-hq · TASK-… · <modelo> · $… · ctx …%`, y debe aparecer `<dataDir>\state\<sid8>.json`.
+- [ ] **Step 1: Actualizar el plugin instalado** (pide permiso): `claude plugin marketplace update project-hq-local` y `claude plugin update project-hq@project-hq` (si el subcomando difiere, usa `claude plugin --help`). Comprueba que `~/.claude/plugins/installed_plugins.json` apunta a `…\project-hq\0.2.0` y que `…\cache\project-hq-local\project-hq\0.2.0\hooks\event.mjs` existe.
+- [ ] **Step 2: Prueba de las fases con herramientas reales** en `demo-hq` (sin permisos especiales; son datos de prueba): desde `<projectsRoot>\demo-hq` ejecuta `node "<repo-project-hq>\scripts\fases.mjs" set` con el JSON `{"fases":["Diseño","Construcción"]}` por stdin y luego `status`. Esperado: no crea hitos (ya existen), `Diseño` queda `activa` (TASK-2 Hecho, TASK-3 en Verificando) y `Construcción` `pendiente`. Mueve TASK-3 a «Hecho» con `backlog task edit 3 -s "Hecho"`: `status` debe mostrar `Diseño` en `esperando`. Aprueba con `node -e "import('file:///C:/proyectos%20personales/project-hq/lib/fases.mjs').then(m=>m.approvePhase(process.cwd(),'f1','2026-10-09'))"` (el subcomando `approve` de la CLI exige terminal interactiva): `Construcción` pasa a `activa`.
+- [ ] **Step 3: Comprobar el contexto de arranque** ejecutando `node hooks\session-start.mjs` con `{"cwd":"<projectsRoot>\\demo-hq"}` por stdin (con `HQ_CONFIG` por defecto): debe incluir la línea de fase y «Esperando tu visto bueno» cuando corresponda.
+- [ ] **Step 4: Activar la statusline** (pide permiso; es configuración de usuario): añade a `~/.claude/settings.json`, conservando todo lo existente, `"statusLine": {"type": "command", "command": "node \"<repo-project-hq>\\scripts\\statusline.mjs\""}`. Pide al usuario abrir una sesión **nueva** de Claude Code en `demo-hq` (y aceptar la confianza del espacio de trabajo si la pide): debe verse `demo-hq · TASK-… · <modelo> · $… · ctx …%`, y debe aparecer `<dataDir>\state\<sid8>.json`.
 - [ ] **Step 5: Comprobar los eventos reales** en esa sesión nueva: tras pedir a Claude un par de lecturas y un comando, `<dataDir>\events\demo-hq\AAAA-MM-DD.jsonl` debe tener líneas con `tool`, `target` y `model`, **sin texto de prompts**, y `logs\hooks.log` sin errores. Verifica también los campos reales de `SubagentStart`/`SubagentStop`/`PostModelSwitch` (si algún campo difiere de lo supuesto en `lib/events.mjs`, corrige `summarize` y su test) y que `"async": true` no retrasa las herramientas.
 - [ ] **Step 6: Lanzador.** Aún sin `hq` instalado, ejecuta `node scripts\hq-open.mjs demo-hq --dry-run` y confirma los argumentos. Con permiso del usuario, ejecútalo sin `--dry-run` **solo para validar el reparto de `wt.exe`** (los paneles `hq board/feed/notes` fallarán hasta el Plan B; es esperado): debe abrir una ventana nueva con Claude a la izquierda y dos paneles a la derecha, y una pestaña «Notas demo-hq»; anota cualquier ajuste necesario en `buildWtArgs` (separadores, `-w new`, orden de foco) y corrige su test.
 - [ ] **Step 6b: Puerta real (Task 11).** Con el plugin 0.2.0 activo, en una sesión nueva de Claude Code dentro de `demo-hq`, pide a Claude: «mueve la tarjeta 3 a Hecho con backlog». Esperado: la herramienta es denegada con el mensaje de la puerta humana (y nada cambia en la tarjeta); pídele luego que la mueva a «En curso»: debe funcionar. Comprueba también que escribirlo tú con `! backlog task edit 3 -s "Hecho"` SÍ se ejecuta (los comandos con `!` no pasan por hooks).
@@ -1842,7 +1842,7 @@ const BLOQUEADOS = [
   "backlog task edit 3 -s='Hecho' --plain",
   'cd x && backlog task edit 3 -s hecho --plain',
   'backlog task create "x" -s Done',
-  'node "C:/proyectos personales/project-hq/scripts/fases.mjs" approve f1',
+  'node "<repo-project-hq>/scripts/fases.mjs" approve f1',
   "node -e \"import('./lib/fases.mjs').then(m=>m.approvePhase('.', 'f1','2026-10-09'))\"",
   "echo '{}' > .hq/fases.json",
   'sed -i s/null/2026/ .hq/fases.json',

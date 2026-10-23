@@ -58,7 +58,7 @@ test('no exporta borradores, privadas, con revisar-privacidad: true, ni nada fue
 
 test('con datos personales: se retiene y se marca; tras limpiar o revisar se exporta', () => {
   const { d, k } = nuevo();
-  const f = nota(d, 'Wiki/Temas/Contacto.md', { ...ok, titulo: 'Contacto' }, 'Escribe a ali@correo.example.com');
+  const f = nota(d, 'Wiki/Temas/Contacto.md', { ...ok, titulo: 'Contacto' }, 'Escribe a usuario@correo.example.com');
   let r = exportar({ destino: d, conocimiento: k, ahora: AHORA });
   assert.deepEqual(r.exportadas, []);
   assert.match(r.retenidas[0].motivo, /correo/);
@@ -66,7 +66,7 @@ test('con datos personales: se retiene y se marca; tras limpiar o revisar se exp
   r = exportar({ destino: d, conocimiento: k, ahora: AHORA });
   assert.deepEqual(r.exportadas, []);
   // el usuario quita la marca pero el correo sigue: se vuelve a retener
-  nota(d, 'Wiki/Temas/Contacto.md', { ...ok, titulo: 'Contacto' }, 'Escribe a ali@correo.example.com');
+  nota(d, 'Wiki/Temas/Contacto.md', { ...ok, titulo: 'Contacto' }, 'Escribe a usuario@correo.example.com');
   assert.deepEqual(exportar({ destino: d, conocimiento: k, ahora: AHORA }).exportadas, []);
   // el usuario limpia el texto
   nota(d, 'Wiki/Temas/Contacto.md', { ...ok, titulo: 'Contacto' }, 'Escribe a quien corresponda');
@@ -75,18 +75,18 @@ test('con datos personales: se retiene y se marca; tras limpiar o revisar se exp
 
 test('revisar-privacidad: false significa «ya lo he revisado»: se exporta redactado', () => {
   const { d, k } = nuevo();
-  nota(d, 'Wiki/Temas/Revisada.md', { ...ok, titulo: 'Revisada', 'revisar-privacidad': false }, 'Trabajo en Farmhispania; correo ali@correo.example.com');
-  const r = exportar({ destino: d, conocimiento: k, terminos: ['Farmhispania'], ahora: AHORA });
+  nota(d, 'Wiki/Temas/Revisada.md', { ...ok, titulo: 'Revisada', 'revisar-privacidad': false }, 'Trabajo en Acme; correo usuario@correo.example.com');
+  const r = exportar({ destino: d, conocimiento: k, terminos: ['Acme'], ahora: AHORA });
   assert.deepEqual(r.exportadas, ['Temas/Revisada.md']);
   const t = leer(path.join(k, 'Temas', 'Revisada.md'));
-  assert.doesNotMatch(t, /Farmhispania|ali@correo/);
+  assert.doesNotMatch(t, /Acme|usuario@correo/);
   assert.match(t, /\[redactado\]/);
 });
 
 test('los términos de la lista retienen la nota aunque no haya otros datos', () => {
   const { d, k } = nuevo();
-  nota(d, 'Wiki/Temas/Empresa.md', { ...ok, titulo: 'Empresa' }, 'Trabajo en farmhispania');
-  const r = exportar({ destino: d, conocimiento: k, terminos: ['Farmhispania'], ahora: AHORA });
+  nota(d, 'Wiki/Temas/Empresa.md', { ...ok, titulo: 'Empresa' }, 'Trabajo en acme');
+  const r = exportar({ destino: d, conocimiento: k, terminos: ['Acme'], ahora: AHORA });
   assert.deepEqual(r.exportadas, []);
   assert.match(r.retenidas[0].motivo, /termino/);
 });

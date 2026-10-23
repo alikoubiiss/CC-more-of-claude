@@ -16,7 +16,7 @@ function entorno() {
     writeFileSync(f, txt);
   };
   w('Wiki/Temas/Bueno.md', '---\ntipo: tema\ntitulo: Bueno\nestado: revisada\ncompartir: hq\n---\nTexto limpio.\n');
-  w('Wiki/Temas/Contacto.md', '---\ntipo: tema\ntitulo: Contacto\nestado: revisada\ncompartir: hq\n---\nEscribe a ali@correo.example.com\n');
+  w('Wiki/Temas/Contacto.md', '---\ntipo: tema\ntitulo: Contacto\nestado: revisada\ncompartir: hq\n---\nEscribe a usuario@correo.example.com\n');
   return { root, cfg };
 }
 
@@ -33,8 +33,8 @@ test('exportar informa de exportadas y retenidas, y de cómo desbloquear', () =>
 test('leerTerminos: ausente da lista vacía, válido se lee y roto da error claro', () => {
   const d = tmpDir();
   assert.deepEqual(leerTerminos(d), []);
-  writeFileSync(path.join(d, 'vault-redactor.json'), '{"terminos":["Farmhispania"]}');
-  assert.deepEqual(leerTerminos(d), ['Farmhispania']);
+  writeFileSync(path.join(d, 'vault-redactor.json'), '{"terminos":["Acme"]}');
+  assert.deepEqual(leerTerminos(d), ['Acme']);
   writeFileSync(path.join(d, 'vault-redactor.json'), '{roto');
   assert.throws(() => leerTerminos(d), /vault-redactor\.json/);
 });

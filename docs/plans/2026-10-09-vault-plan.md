@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax. **Plan ligero:** el código completo está solo en las partes delicadas (guardia de rutas, limpieza de chats, enlaces, redactor, prompt de destilado); el resto lleva interfaces exactas, comportamiento y casos de test.
 
-**Goal:** Migrar el vault Personal (OneDrive) a `C:\Bovedas\Personal` con la estructura de 3 capas, destilar su Wiki con Sonnet por lotes y exportar a `ProjectHQ\Conocimiento\` solo lo compartible, con redacción automática de datos personales.
+**Goal:** Migrar el vault Personal (la nube sincronizada) a `<vault-personal>` con la estructura de 3 capas, destilar su Wiki con Sonnet por lotes y exportar a `ProjectHQ\Conocimiento\` solo lo compartible, con redacción automática de datos personales.
 
 **Architecture:** Módulos puros en `lib/` (rutas, chats, enlaces, respaldo, migración, redactor, destilado, exportación) con efectos inyectables (sistema de ficheros real en tests con directorios temporales; ejecutor de `claude -p` inyectable), y scripts finos en `scripts/` (`vault-migrar`, `vault-destilar`, `vault-aprobar`, `vault-exportar-hq`, `vault-revisar`). Nada escribe fuera de tres raíces permitidas.
 
@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Trabajar en una rama `feat/vault` (no en `master`). Commits con `Co-Authored-By: Claude <modelo> <noreply@anthropic.com>`. Tests: `npm test` (221 existentes deben seguir pasando).
-- **El vault viejo es solo lectura.** Ningún código escribe ni borra en `vaultPersonalOrigen`. Escrituras únicamente en `vaultPersonalDestino` (`C:\Bovedas\Personal`), `<vaultPath>\Conocimiento` y `backupsDir`. Rutas con `..`, fuera de esas raíces o que pasen por enlaces simbólicos se rechazan.
+- **El vault viejo es solo lectura.** Ningún código escribe ni borra en `vaultPersonalOrigen`. Escrituras únicamente en `vaultPersonalDestino` (`<vault-personal>`), `<vaultPath>\Conocimiento` y `backupsDir`. Rutas con `..`, fuera de esas raíces o que pasen por enlaces simbólicos se rechazan.
 - Sin red salvo la llamada al modelo (fase 2). Sin dependencias nuevas. UTF-8. Textos de usuario en español.
 - **Los textos de los chats son datos no confiables:** nunca se ejecutan ni se interpretan como instrucciones; en el prompt van delimitados.
 - Config nueva (opcional en `loadConfig`, no rompe tests existentes): `vaultPersonalOrigen`, `vaultPersonalDestino` (rutas absolutas), `conocimientoDir` (por defecto `Conocimiento`).
@@ -151,7 +151,7 @@ export const PATRONES = [
 ```
 Además cada término de `terminos` (sin distinguir mayúsculas, escapado como literal, mínimo 3 caracteres) se sustituye. Las tarjetas solo si pasan Luhn; los teléfonos solo si tienen 9–11 dígitos y no son fechas (`2026-03-16`) ni versiones. No toca bloques de código con `languaje` conocido solo si el patrón es `telefono` (evitar destrozar números en código); el resto se aplica siempre. Regex acotadas (sin retroceso catastrófico: entrada de 1 MB en < 500 ms).
 
-- [ ] **Step 1: Tests:** cada tipo con 2 positivos reales (un IBAN español `ES91 2100 0418 4502 0005 1332`, tarjeta de prueba `4111 1111 1111 1111`, correo con `+`, token `ghp_` falso, `password: hunter2`), falsos positivos que NO se tocan (fecha `2026-03-16`, versión `1.2.3.4`, número de 16 dígitos que falla Luhn, hash corto, precio `1.234,56`), término de la lista (`Farmhispania`, también en minúsculas), mensaje con varios tipos cuenta bien, entrada de 1 MB de `a@a.` repetido y de dígitos en < 500 ms, texto vacío.
+- [ ] **Step 1: Tests:** cada tipo con 2 positivos reales (un IBAN español `ES91 2100 0418 4502 0005 1332`, tarjeta de prueba `4111 1111 1111 1111`, correo con `+`, token `ghp_` falso, `password: hunter2`), falsos positivos que NO se tocan (fecha `2026-03-16`, versión `1.2.3.4`, número de 16 dígitos que falla Luhn, hash corto, precio `1.234,56`), término de la lista (`Acme`, también en minúsculas), mensaje con varios tipos cuenta bien, entrada de 1 MB de `a@a.` repetido y de dígitos en < 500 ms, texto vacío.
 - [ ] **Step 2–4:** fallar, implementar, pasar. **Step 5: Commit** `feat(vault): redactor de privacidad`.
 
 ---
@@ -203,7 +203,7 @@ No inventes: usa solo lo que dicen los chats. Una nota por idea reutilizable; om
 ### Task 10: Prueba real y cierre (la hace el controlador con el usuario; CON PARADAS)
 
 - [ ] **Step 1 (sin escribir):** `node scripts/vault-migrar.mjs --dry-run` sobre el vault real; mostrar al usuario el resumen del plan (nº de notas por destino, avisos, nombres que cambian).
-- [ ] **Step 2 (pide permiso):** ejecución real (crea la copia en `backups\` y `C:\Bovedas\Personal`); comprobar `verificacion.ok` y los hashes; pedir al usuario que abra `C:\Bovedas\Personal` en Obsidian y confirme que las 6 Bases cargan y los enlaces se ven.
+- [ ] **Step 2 (pide permiso):** ejecución real (crea la copia en `backups\` y `<vault-personal>`); comprobar `verificacion.ok` y los hashes; pedir al usuario que abra `<vault-personal>` en Obsidian y confirme que las 6 Bases cargan y los enlaces se ven.
 - [ ] **Step 3 (pide permiso por gasto de tokens):** destilar un lote piloto (una categoría) mostrando la estimación; el usuario revisa las notas en Obsidian y aprueba o rechaza; después el resto por lotes.
 - [ ] **Step 4:** el usuario marca `compartir: hq` en lo que quiera; `vault-exportar-hq`; revisar `retenidas`; comprobar que `/retomar` en un proyecto lee `Conocimiento/index.md`.
 - [ ] **Step 5:** actualizar el plugin a 0.4.0 (con permiso), revisión final de toda la rama con Opus, merge a `master`, y avisar de que el vault viejo ya no hace falta (borrarlo lo decide el usuario).

@@ -1,6 +1,6 @@
 {
-  "name": "project-hq-local",
-  "owner": { "name": "Ali" },
+  "name": "project-hq",
+  "owner": { "name": "Project HQ contributors" },
   "plugins": [
     { "name": "project-hq", "source": "./", "description": "Project HQ: proyectos con Backlog.md, Obsidian y NotebookLM" }
   ]

@@ -1,10 +1,10 @@
 # Project HQ — Subsistema 1: Núcleo (spec de diseño)
 
-Fecha: 2026-10-08 · Autor: Ali + Claude · Estado: pendiente de revisión
+Fecha: 2026-10-08 · Autor: el autor + Claude · Estado: pendiente de revisión
 
 ## 1. Contexto y objetivo
 
-Ali (automatizaciones, n8n, Arduino, servidores propios) quiere un "cuartel general" para proyectos personales que conecte **NotebookLM + Obsidian + Claude Code**, separado por proyecto, barato en tokens y clonable más adelante para trabajo.
+el usuario (automatizaciones, n8n, Arduino, servidores propios) quiere un "cuartel general" para proyectos personales que conecte **NotebookLM + Obsidian + Claude Code**, separado por proyecto, barato en tokens y clonable más adelante para trabajo.
 
 Este spec cubre solo el **Núcleo**. El sistema completo se divide en 4 subsistemas, cada uno con su spec y plan:
 
@@ -23,7 +23,7 @@ Este spec cubre solo el **Núcleo**. El sistema completo se divide en 4 subsiste
 
 Windows 11 Pro · Node 22.23 · npm 10.9 · Python 3.12 · Git 2.55 · Claude Code 2.1.294 · modelo `opusplan` ya activo. **Faltan** `uv`, `gh`, `bun`. Sin MCPs globales en la config de Claude Code. Plugins activos relevantes: superpowers, feature-dev, frontend-design, context7, hookify.
 
-Vault: `%USERPROFILE%\OneDrive\Bovedas\Personal` (89 notas, 5 MB, plugin Local REST API, usa Bases). **Está en OneDrive**: no escribir eventos en alta frecuencia ni poner `.git` dentro.
+Vault: `%USERPROFILE%\la nube sincronizada\Bovedas\Personal` (89 notas, 5 MB, plugin Local REST API, usa Bases). **Está en la nube sincronizada**: no escribir eventos en alta frecuencia ni poner `.git` dentro.
 
 ### Verificación de repos (§8 del prompt maestro)
 | Repo | Estado | Decisión |
@@ -64,7 +64,7 @@ project-hq/                       plugin + repo git propio
   registry.json                   proyectos: nombre, ruta, notebookId, puerto
   docs/specs/ docs/plans/
 
-<proyectosRoot>/<nombre>/         C:\proyectos personales\<nombre>
+<proyectosRoot>/<nombre>/         <projectsRoot>\<nombre>
   backlog/                        tarjetas (fuente de verdad)
   docs/ARQUITECTURA.md
   .hq/project.json                notebookId, notaVault, puerto, creado
@@ -75,7 +75,7 @@ project-hq/                       plugin + repo git propio
   Decisiones/AAAA-MM-DD-titulo.md
   Sesiones/AAAA-MM-DD-hhmm.md
 ```
-**Vault de HQ nuevo y dedicado: `C:\Bovedas\ProjectHQ`** (fuera de OneDrive), con su propio plugin Local REST API (HTTPS 27145, HTTP local 27124; el vault Personal usa 27144/27123). `vaultProjectsDir` = `Proyectos`. El vault Personal (OneDrive) no se toca en el Núcleo; su reestructuración y la migración de contenido útil pertenecen al subsistema 2.
+**Vault de HQ nuevo y dedicado: `<vaultPath>`** (fuera de la nube sincronizada), con su propio plugin Local REST API (HTTPS 27145, HTTP local 27124; el vault Personal usa 27144/27123). `vaultProjectsDir` = `Proyectos`. El vault Personal (la nube sincronizada) no se toca en el Núcleo; su reestructuración y la migración de contenido útil pertenecen al subsistema 2.
 
 Todos los scripts son Node ESM sin dependencias externas (Windows nativo, sin bash).
 
@@ -132,7 +132,7 @@ CLAUDE.md global y de proyecto como índices (≤ 25 líneas). Detalle en el vau
 - Credenciales `nlm` en modo *protected*, perfil con cuenta Google secundaria.
 - Escritura al vault: solo bajo `vaultProjectsDir/<proyecto>/`; nunca sobrescribe notas existentes sin copia `.bak`.
 - Instalaciones (cada una requiere visto bueno): `uv`, `backlog.md`, `notebooklm-mcp-cli`, `claude mcp add backlog`, el plugin `project-hq`.
-- **Nada de HQ en OneDrive** (el almacenamiento es limitado; por eso HQ tiene su propio vault en `C:\Bovedas\ProjectHQ`): el plugin, los repos de proyecto, `node_modules`, logs, datos del dashboard y las copias de seguridad viven bajo `C:\proyectos personales\` (fuera de OneDrive). Al vault HQ solo se escriben notas `.md` pequeñas (índice, decisiones, resúmenes de sesión). Nunca adjuntos, logs ni binarios. Las copias `.bak` y las copias previas a migrar el vault van a `C:\proyectos personales\project-hq\backups\` (en `.gitignore`).
+- **Nada de HQ en la nube sincronizada** (el almacenamiento es limitado; por eso HQ tiene su propio vault en `<vaultPath>`): el plugin, los repos de proyecto, `node_modules`, logs, datos del dashboard y las copias de seguridad viven bajo `<projectsRoot>\` (fuera de la nube sincronizada). Al vault HQ solo se escriben notas `.md` pequeñas (índice, decisiones, resúmenes de sesión). Nunca adjuntos, logs ni binarios. Las copias `.bak` y las copias previas a migrar el vault van a `<repo-project-hq>\backups\` (en `.gitignore`).
 - Puertos por proyecto asignados desde `basePort` y guardados en `registry.json`.
 
 ## 10. Pruebas
